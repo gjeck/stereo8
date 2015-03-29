@@ -16,6 +16,7 @@ RUN apt-get update \
     make \
     python3.4 \
     python3.4-dev \
+    python3-pip \
     curl \
     git \
     vim \
@@ -27,5 +28,5 @@ RUN apt-get update \
 RUN mkdir /code
 WORKDIR /code
 ADD requirements.txt /code/
-RUN pip3.4 install -r requirements.txt
+RUN pip3 install -r requirements.txt
 ADD . /code/
