@@ -2,7 +2,7 @@ db:
     image: postgres
 web:
     build: .
-    command: python3.4 stereo8/manage.py runserver 0.0.0.0:8000
+    command: python3 stereo8/manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/code
     ports:
