@@ -1,5 +1,7 @@
 db:
     image: postgres
+search:
+    image: elasticsearch
 web:
     build: .
     command: python3.4 stereo8/manage.py runserver 0.0.0.0:8000
@@ -9,3 +11,4 @@ web:
       - "8000:8000"
     links:
       - db
+      - search
