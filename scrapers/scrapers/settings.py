@@ -7,6 +7,11 @@
 #
 #     http://doc.scrapy.org/en/latest/topics/settings.html
 #
+import sys
+sys.path.append('/code/stereo8')
+
+import os
+os.environ['DJANGO_SETTINGS_MODULE'] = 'stereo8.settings'
 
 BOT_NAME = 'scrapers'
 
@@ -15,3 +20,4 @@ NEWSPIDER_MODULE = 'scrapers.spiders'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'scrapers (+http://www.yourdomain.com)'
+
