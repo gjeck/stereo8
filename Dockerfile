@@ -16,7 +16,9 @@ RUN apt-get update \
     make \
     python3.4 \
     python3.4-dev \
+    python-dev \
     python3-pip \
+    python-pip \
     curl \
     git \
     vim \
@@ -27,6 +29,6 @@ RUN apt-get update \
 
 RUN mkdir /code
 WORKDIR /code
-ADD requirements.txt /code/
-RUN pip3 install -r requirements.txt
 ADD . /code/
+RUN pip3 install -r stereo8/requirements.txt
+RUN pip install -r scrapers/requirements.txt

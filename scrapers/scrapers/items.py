@@ -5,6 +5,7 @@
 
 import scrapy
 from scrapy.contrib.djangoitem import DjangoItem
+from base.models import *
 
 class AlbumItem(DjangoItem):
     django_model = Album
