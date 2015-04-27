@@ -24,8 +24,12 @@ class MetacriticSpider(scrapy.Spider):
         meta_info = response.css('.product_title')
         album_title = meta_info.css('span a.hover_none span::text')[0].extract().strip()
         artist_name = meta_info.css('span.band_name::text')[0].extract().strip()
+
         album_score_sel = response.css('.metascore_w span::text')
         album_score = album_score_sel[0].extract().strip() if len(album_score_sel) else '0'
-        album_summary = response.css('.summary_detail.product_summary span.data span::text')[0].extract()
+
+        album_summary_sel = response.css('.summary_detail.product_summary span.data span::text')
+        album_summary = album_summary_sel[0].extract() if len(album_summary_sel) else ''
+
         print artist_name, album_title, album_score
 
