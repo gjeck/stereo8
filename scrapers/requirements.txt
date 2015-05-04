@@ -12,7 +12,7 @@ enum34==1.0.4
 gyp==0.1
 html5lib==0.999
 lxml==3.4.2
-musicbrainzngs==0.5
+-e git+https://github.com/alastair/python-musicbrainzngs.git@dc12e716d93a6e59172b5638c4c73b3a5f992e18#egg=musicbrainzngs-master
 psycopg2==2.6
 pyOpenSSL==0.14
 pyasn1==0.1.7

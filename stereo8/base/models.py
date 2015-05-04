@@ -10,11 +10,15 @@ class Album(models.Model):
     summary = models.TextField()
     score = models.IntegerField()
     score_url = models.URLField()
+    def __str__(self):
+        return 'Album: ' + self.name
 
 class Artist(models.Model):
     mbid = models.CharField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
     bio = models.TextField()
+    def __str__(self):
+        return 'Artist: ' + self.name
 
 class Image(models.Model):
     small = models.URLField()
@@ -23,9 +27,13 @@ class Image(models.Model):
 class Label(models.Model):
     mbid = models.CharField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
+    def __str__(self):
+        return 'Label: ' + self.name
 
 class Publisher(models.Model):
     name = models.CharField(max_length=255)
+    def __str__(self):
+        return 'Publisher: ' + self.name
 
 class Review(models.Model):
     album = models.ForeignKey('Album', blank=True, null=True)
@@ -40,4 +48,5 @@ class Track(models.Model):
     mbid = models.CharField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
     duration = models.IntegerField()
-
+    def __str__(self):
+        return 'Track: ' + self.name
