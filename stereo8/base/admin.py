@@ -1,5 +1,6 @@
 from django.contrib import admin
-from django.db.models import get_models, get_app
+from django.apps import apps
 
-for model in get_models(get_app('base')):
+base_app = apps.get_app_config('base')
+for model in base_app.models.values():
     admin.site.register(model)
