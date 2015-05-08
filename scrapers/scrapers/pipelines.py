@@ -10,17 +10,19 @@ class DjangoItemPipeline(object):
         return item
 
     def process_album(self, item, spider):
+        artist, created = Artist.objects.update_or_create(mbid=item['artist']['mbid'], defaults={
+            'name': item['artist']['name'],
+            'bio': item['artist']['bio'],
+        })
+
         album, created = Album.objects.update_or_create(mbid=item['mbid'], defaults={
+            'artist': artist,
 	    'date': item['date'],
 	    'name': item['name'],
             'summary': item['summary'],
             'score': item['score'],
             'score_url': item['score_url'],
 	})
-	if created:
-	    print 'created'
-	else:
-	    print 'updated'
 	return item
         
 

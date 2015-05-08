@@ -4,6 +4,7 @@ from base.models import *
 
 class AlbumItem(DjangoItem):
     django_model = Album
+    artist = scrapy.Field()
     pass
 
 class ArtistItem(DjangoItem):
