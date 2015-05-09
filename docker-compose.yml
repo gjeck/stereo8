@@ -1,5 +1,7 @@
 db:
     image: postgres
+    env_file:
+      - .keys.dockenv
 search:
     image: elasticsearch
     ports:
@@ -14,3 +16,6 @@ web:
     links:
       - db
       - search
+    env_file:
+      - .keys.dockenv
+    

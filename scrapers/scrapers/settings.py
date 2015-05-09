@@ -14,9 +14,9 @@ import os
 os.environ['DJANGO_SETTINGS_MODULE'] = 'stereo8.settings'
 
 BOT_NAME = 'scrapers'
-
 SPIDER_MODULES = ['scrapers.spiders']
 NEWSPIDER_MODULE = 'scrapers.spiders'
+ITEM_PIPELINES = {'scrapers.pipelines.DjangoItemPipeline': 1}
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'scrapers (+http://www.yourdomain.com)'

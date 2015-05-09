@@ -31,4 +31,4 @@ RUN mkdir /code
 WORKDIR /code
 ADD . /code/
 RUN pip3 install -r stereo8/requirements.txt
-RUN pip install -r scrapers/requirements.txt
+RUN pip install -r scrapers/requirements.txt --src=/.pip_temp
