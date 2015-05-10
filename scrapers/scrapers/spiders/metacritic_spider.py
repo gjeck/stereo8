@@ -1,16 +1,7 @@
-import scrapy, datetime, musicbrainzngs
+import scrapy, datetime
 from scrapers.items import *
+from scrapers.music_apis import MusicHelper
 
-
-class MusicBrainzHelper():
-
-    def __init__(self):
-        musicbrainzngs.set_useragent('Stereo8', '0.1.0', 'https://github.com/gjeck/stereo8')
-
-    def find_album(self, name, artist):
-        response = musicbrainzngs.search_release_groups(query=name, artist=artist, limit=1)
-        release_list = response['release-group-list']
-        return release_list[0]
 
 class MetacriticSpider(scrapy.Spider):
     name = 'metacritic'
@@ -20,7 +11,7 @@ class MetacriticSpider(scrapy.Spider):
         'http://www.metacritic.com/browse/albums/release-date/new-releases/date?view=detailed',
     ]
     download_delay = 2
-    mb = MusicBrainzHelper()
+    apis = MusicHelper()
 
     def parse(self, response):
         album_links = response.css('li.product').xpath('.//h3/a/@href').extract()
@@ -57,7 +48,7 @@ class MetacriticSpider(scrapy.Spider):
         album_summary = self.safe_extract(album_summary_sel)
         album['summary'] = album_summary
 
-        mb_album = self.mb.find_album(album_name, artist_name)
+        mb_album = self.apis.mb_find_album(album_name, artist_name)
         album['mbid'] = mb_album['id']
         artist['mbid'] = mb_album['artist-credit'][0]['artist']['id']
         artist['bio'] = ''

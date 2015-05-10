@@ -17,6 +17,7 @@ class Album(models.Model):
         return '{0} - {1}'.format(*album)
 
 class Artist(models.Model):
+    tags = TaggableManager()
     bio = models.TextField()
     mbid = models.CharField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
