@@ -19,6 +19,7 @@ class Album(models.Model):
 class Artist(models.Model):
     tags = TaggableManager()
     bio = models.TextField()
+    bio_url = models.URLField()
     mbid = models.CharField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
     def __str__(self):
@@ -27,6 +28,7 @@ class Artist(models.Model):
 class Image(models.Model):
     large = models.URLField()
     mbid = models.CharField(max_length=255, unique=True)
+    medium = models.URLField()
     small = models.URLField()
 
 class Label(models.Model):
