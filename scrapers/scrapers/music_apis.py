@@ -1,4 +1,5 @@
 import os, re, musicbrainzngs, pylast
+from django.utils.html import strip_tags
 
 
 class MusicHelper():
@@ -11,7 +12,7 @@ class MusicHelper():
         self.lastfm.enable_rate_limit()
         self.lastfm.enable_caching()
 
-    def mb_find_album(self, name, artist):
+    def mb_find_album(self, name, artist=''):
         ''' Searches musicbrainzngs release groups and returns the first result (best match)
         Args:
             name: the album name
@@ -21,8 +22,17 @@ class MusicHelper():
         '''
         response = musicbrainzngs.search_release_groups(query=name, artist=artist, limit=1)
         release_list = response['release-group-list']
-        return release_list[0]
+        return release_list[0] if release_list else None
 
-    def lastfm_clean_summary(self, summary):
-        return re.sub('<a.+?\/a>\.', summary).replace('\n', '').strip()
+    def mb_get_album_by_id(self, id):
+        return musicbrainzngs.get_release_group_by_id(id)
+
+    @staticmethod
+    def lastfm_clean_summary(summary):
+        clean_summary = strip_tags(summary.replace('\n', '').strip())
+        final = re.split(r'\s{4,}', clean_summary)
+        if final:
+            return final[0]
+        else:
+            return clean_summary
 
