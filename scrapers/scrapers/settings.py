@@ -19,5 +19,5 @@ NEWSPIDER_MODULE = 'scrapers.spiders'
 ITEM_PIPELINES = {'scrapers.pipelines.DjangoItemPipeline': 1}
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = 'scrapers (+http://www.yourdomain.com)'
+USER_AGENT = 'scrapers (+https://github.com/gjeck/stereo8)'
 

@@ -8,6 +8,8 @@ chardet==2.0.1
 colorama==0.2.5
 cryptography==0.8.1
 cssselect==0.9.1
+django-haystack==2.3.1
+django-taggit==0.14.0
 enum34==1.0.4
 gyp==0.1
 html5lib==0.999
@@ -18,7 +20,6 @@ pyOpenSSL==0.14
 pyasn1==0.1.7
 pyasn1-modules==0.0.5
 pycparser==2.10
-pyen==2.3
 pylast==1.2.1
 queuelib==1.2.2
 requests==2.2.1
