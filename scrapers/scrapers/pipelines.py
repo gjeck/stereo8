@@ -17,6 +17,8 @@ class DjangoItemPipeline(object):
             'name': item['artist']['name'],
             'bio': item['artist']['bio'],
             'bio_url': item['artist']['bio_url'],
+            'familiarity': item['artist']['familiarity'],
+            'trending': item['artist']['trending'],
         })
         artist.tags.add(*item['artist']['tags'])
 

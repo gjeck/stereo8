@@ -15,12 +15,13 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Album',
             fields=[
-                ('id', models.AutoField(primary_key=True, serialize=False, auto_created=True, verbose_name='ID')),
+                ('id', models.AutoField(primary_key=True, auto_created=True, verbose_name='ID', serialize=False)),
                 ('created_date', models.DateTimeField(auto_now_add=True)),
                 ('updated_date', models.DateTimeField(auto_now=True)),
+                ('name', models.CharField(max_length=255)),
+                ('slug', models.SlugField()),
                 ('date', models.DateField()),
                 ('mbid', models.CharField(max_length=255, unique=True)),
-                ('name', models.CharField(max_length=255)),
                 ('score', models.IntegerField()),
                 ('score_url', models.URLField()),
                 ('summary', models.TextField()),
@@ -32,14 +33,17 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Artist',
             fields=[
-                ('id', models.AutoField(primary_key=True, serialize=False, auto_created=True, verbose_name='ID')),
+                ('id', models.AutoField(primary_key=True, auto_created=True, verbose_name='ID', serialize=False)),
                 ('created_date', models.DateTimeField(auto_now_add=True)),
                 ('updated_date', models.DateTimeField(auto_now=True)),
+                ('name', models.CharField(max_length=255)),
+                ('slug', models.SlugField()),
                 ('bio', models.TextField()),
                 ('bio_url', models.URLField()),
                 ('mbid', models.CharField(max_length=255, unique=True)),
-                ('name', models.CharField(max_length=255)),
-                ('tags', taggit.managers.TaggableManager(to='taggit.Tag', help_text='A comma-separated list of tags.', through='taggit.TaggedItem', verbose_name='Tags')),
+                ('familiarity', models.DecimalField(max_digits=17, default=0.0, decimal_places=16)),
+                ('trending', models.DecimalField(max_digits=17, default=0.0, decimal_places=16)),
+                ('tags', taggit.managers.TaggableManager(to='taggit.Tag', help_text='A comma-separated list of tags.', verbose_name='Tags', through='taggit.TaggedItem')),
             ],
             options={
                 'abstract': False,
@@ -48,7 +52,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Image',
             fields=[
-                ('id', models.AutoField(primary_key=True, serialize=False, auto_created=True, verbose_name='ID')),
+                ('id', models.AutoField(primary_key=True, auto_created=True, verbose_name='ID', serialize=False)),
                 ('created_date', models.DateTimeField(auto_now_add=True)),
                 ('updated_date', models.DateTimeField(auto_now=True)),
                 ('large', models.URLField()),
@@ -63,7 +67,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Publisher',
             fields=[
-                ('id', models.AutoField(primary_key=True, serialize=False, auto_created=True, verbose_name='ID')),
+                ('id', models.AutoField(primary_key=True, auto_created=True, verbose_name='ID', serialize=False)),
                 ('created_date', models.DateTimeField(auto_now_add=True)),
                 ('updated_date', models.DateTimeField(auto_now=True)),
                 ('name', models.CharField(max_length=255, unique=True)),
@@ -76,7 +80,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Review',
             fields=[
-                ('id', models.AutoField(primary_key=True, serialize=False, auto_created=True, verbose_name='ID')),
+                ('id', models.AutoField(primary_key=True, auto_created=True, verbose_name='ID', serialize=False)),
                 ('created_date', models.DateTimeField(auto_now_add=True)),
                 ('updated_date', models.DateTimeField(auto_now=True)),
                 ('date', models.DateField()),
@@ -92,7 +96,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Track',
             fields=[
-                ('id', models.AutoField(primary_key=True, serialize=False, auto_created=True, verbose_name='ID')),
+                ('id', models.AutoField(primary_key=True, auto_created=True, verbose_name='ID', serialize=False)),
                 ('created_date', models.DateTimeField(auto_now_add=True)),
                 ('updated_date', models.DateTimeField(auto_now=True)),
                 ('duration', models.IntegerField()),
@@ -117,6 +121,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='album',
             name='tags',
-            field=taggit.managers.TaggableManager(to='taggit.Tag', help_text='A comma-separated list of tags.', through='taggit.TaggedItem', verbose_name='Tags'),
+            field=taggit.managers.TaggableManager(to='taggit.Tag', help_text='A comma-separated list of tags.', verbose_name='Tags', through='taggit.TaggedItem'),
         ),
     ]

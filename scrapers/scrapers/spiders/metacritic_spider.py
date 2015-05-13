@@ -11,7 +11,7 @@ class MetacriticSpider(scrapy.Spider):
     start_urls = [
         'http://www.metacritic.com/browse/albums/release-date/new-releases/date?view=detailed',
     ]
-    download_delay = 2.5
+    download_delay = 3
     apis = MusicHelper()
 
     def parse(self, response):
@@ -54,13 +54,15 @@ class MetacriticSpider(scrapy.Spider):
         artist['bio'] = MusicHelper.lastfm_clean_summary(lf_artist.get_bio_summary())
         artist['bio_url'] = lf_artist.get_url()
         artist['tags'] = [tag.item.get_name().lower() for tag in lf_artist.get_top_tags(limit=6)]
+        artist['familiarity'] = self.apis.en_get_artist_familiarity(artist_id)
+        artist['trending'] = self.apis.en_get_artist_trending(artist_id)
 
         mb_release = self.apis.mb_get_album_by_id(mb_album['id'])
         album_date = mb_release['release-group']['first-release-date']
+        album['date'] = datetime.strptime(album_date, '%Y-%m-%d')
         album['artist'] = artist
         album['mbid'] = mb_album['id']
         album['name'] = mb_album['title']
-        album['date'] = datetime.strptime(album_date, '%Y-%m-%d')
 
         album_score_sel = response.css('.metascore_w span::text')
         album_score = self.safe_extract(album_score_sel, default='0')
@@ -74,6 +76,6 @@ class MetacriticSpider(scrapy.Spider):
         yield album
 
     def safe_extract(self, selector, default=''):
-        return selector[0].extract().strip() if len(selector) else default
+        return selector[0].extract().strip() if selector else default
 
 

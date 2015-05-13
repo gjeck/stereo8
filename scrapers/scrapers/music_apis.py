@@ -1,4 +1,4 @@
-import os, re, musicbrainzngs, pylast
+import os, re, musicbrainzngs, pylast, pyen
 from django.utils.html import strip_tags
 
 
@@ -6,6 +6,7 @@ class MusicHelper():
 
     def __init__(self):
         musicbrainzngs.set_useragent('Stereo8', '0.1.0', 'https://github.com/gjeck/stereo8')
+        self.en = pyen.Pyen()
         lastfm_api_key = os.environ.get('LAST_FM_API_KEY', '')
         lastfm_api_secret = os.environ.get('LAST_FM_API_SECRET', '')
         self.lastfm = pylast.LastFMNetwork(api_key=lastfm_api_key, api_secret=lastfm_api_secret)
@@ -26,6 +27,22 @@ class MusicHelper():
 
     def mb_get_album_by_id(self, id):
         return musicbrainzngs.get_release_group_by_id(id)
+
+    def en_get_artist_familiarity(self, mbid):
+        artist_id = 'musicbrainz:artist:{0}'.format(mbid)
+        response = self.en.get('artist/familiarity', id=artist_id)
+        if response:
+            return response['artist']['familiarity']
+        else:
+            return None
+
+    def en_get_artist_trending(self, mbid):
+        artist_id = 'musicbrainz:artist:{0}'.format(mbid)
+        response = self.en.get('artist/hotttnesss', id=artist_id)
+        if response:
+            return response['artist']['hotttnesss']
+        else:
+            return None
 
     @staticmethod
     def lastfm_clean_summary(summary):
