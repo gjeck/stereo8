@@ -6,6 +6,7 @@ search:
     image: elasticsearch
     ports:
       - "9200:9200"
+      - "9300:9300"
 web:
     build: .
     command: python3.4 stereo8/manage.py runserver 0.0.0.0:8000

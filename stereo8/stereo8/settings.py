@@ -75,7 +75,7 @@ DATABASES = {
 HAYSTACK_CONNECTIONS = {
     'default': {
         'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
-        'URL': 'http://127.0.0.1:9200/',
+        'URL': 'http://{0}:9200/'.format(os.environ.get('SEARCH_PORT_9200_TCP_ADDR', '')),
         'INDEX_NAME': 'haystack',
     }
 }
