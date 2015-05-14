@@ -53,3 +53,11 @@ class MusicHelper():
         else:
             return clean_summary
 
+    @staticmethod
+    def lastfm_clean_tag(tag):
+        return re.sub(r'-|\/', ' ', tag.item.get_name().lower())
+
+    @staticmethod
+    def clean_tag(tag):
+        return re.sub(r'-|\/', ' ', tag.lower())
+

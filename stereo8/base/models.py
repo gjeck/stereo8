@@ -33,6 +33,7 @@ class Album(SlugModel):
         return '{0} - {1}'.format(*album)
 
 class Artist(SlugModel):
+    image = models.ForeignKey('Image', blank=True, null=True)
     tags = TaggableManager()
     bio = models.TextField()
     bio_url = models.URLField()

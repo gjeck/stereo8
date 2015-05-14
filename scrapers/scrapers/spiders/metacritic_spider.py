@@ -16,7 +16,7 @@ class MetacriticSpider(scrapy.Spider):
 
     def parse(self, response):
         album_links = response.css('li.product').xpath('.//h3/a/@href').extract()
-        for link in album_links[-5:]:
+        for link in album_links[-14:-7]:
             absoluteURL = self.base_url + link
             request = scrapy.Request(absoluteURL, callback=self.parse_album_page)
             yield request
@@ -30,9 +30,6 @@ class MetacriticSpider(scrapy.Spider):
         # External APIs have no info on upcoming releases, so we ignore them
         if datetime.now().date() < release_date:
             return 
-
-        album = AlbumItem()
-        artist = ArtistItem()
 
         album_name_sel = meta_info.css('span a.hover_none span::text')
         album_name = self.safe_extract(album_name_sel)
@@ -49,20 +46,36 @@ class MetacriticSpider(scrapy.Spider):
             return
 
         lf_artist = self.apis.lastfm.get_artist_by_mbid(artist_id)
+        artist_image = ImageItem()
+        artist_image['large'] = lf_artist.get_cover_image(4)
+        artist_image['medium'] = lf_artist.get_cover_image(3)
+        artist_image['small'] = lf_artist.get_cover_image(2)
+
+        artist = ArtistItem()
         artist['mbid'] = artist_id
         artist['name'] = artist_name
         artist['bio'] = MusicHelper.lastfm_clean_summary(lf_artist.get_bio_summary())
         artist['bio_url'] = lf_artist.get_url()
-        artist['tags'] = [tag.item.get_name().lower() for tag in lf_artist.get_top_tags(limit=6)]
+        artist['tags'] = [MusicHelper.lastfm_clean_tag(tag) for tag in lf_artist.get_top_tags(limit=6)]
         artist['familiarity'] = self.apis.en_get_artist_familiarity(artist_id)
         artist['trending'] = self.apis.en_get_artist_trending(artist_id)
+        artist['image'] = artist_image
+
+        lf_album = self.apis.lastfm.get_album(artist_name, mb_album['title'])
+        album_image = ImageItem()
+        album_image['large'] = lf_album.get_cover_image(4)
+        album_image['medium'] = lf_album.get_cover_image(3)
+        album_image['small'] = lf_album.get_cover_image(2)
 
         mb_release = self.apis.mb_get_album_by_id(mb_album['id'])
-        album_date = mb_release['release-group']['first-release-date']
-        album['date'] = datetime.strptime(album_date, '%Y-%m-%d')
+        album_date_string = mb_release['release-group']['first-release-date']
+        album_date = datetime.strptime(album_date_string, '%Y-%m-%d')
+        album = AlbumItem()
+        album['date'] = album_date
         album['artist'] = artist
         album['mbid'] = mb_album['id']
         album['name'] = mb_album['title']
+        album['image'] = album_image
 
         album_score_sel = response.css('.metascore_w span::text')
         album_score = self.safe_extract(album_score_sel, default='0')
@@ -72,6 +85,9 @@ class MetacriticSpider(scrapy.Spider):
         album_summary_sel = response.css('.summary_detail.product_summary span.data span::text')
         album_summary = self.safe_extract(album_summary_sel)
         album['summary'] = album_summary
+
+        album_tags_sel = response.css('li.summary_detail.product_genre span.data::text').extract()
+        album['tags'] = [MusicHelper.clean_tag(tag) for tag in album_tags_sel]
 
         yield album
 
