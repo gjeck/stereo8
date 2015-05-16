@@ -16,7 +16,7 @@ class MetacriticSpider(scrapy.Spider):
 
     def parse(self, response):
         album_links = response.css('li.product').xpath('.//h3/a/@href').extract()
-        for link in album_links[-14:-7]:
+        for link in album_links[-5:]:
             absoluteURL = self.base_url + link
             request = scrapy.Request(absoluteURL, callback=self.parse_album_page)
             yield request
@@ -51,6 +51,13 @@ class MetacriticSpider(scrapy.Spider):
         artist_image['medium'] = lf_artist.get_cover_image(3)
         artist_image['small'] = lf_artist.get_cover_image(2)
 
+        lf_album = self.apis.lastfm.get_album(artist_name, mb_album['title'])
+        album_image = ImageItem()
+        album_image['large'] = lf_album.get_cover_image(4)
+        album_image['medium'] = lf_album.get_cover_image(3)
+        album_image['small'] = lf_album.get_cover_image(2)
+
+        sp_album = self.apis.sp_find_album(mb_album['title'], artist=artist_name)
         artist = ArtistItem()
         artist['mbid'] = artist_id
         artist['name'] = artist_name
@@ -59,13 +66,9 @@ class MetacriticSpider(scrapy.Spider):
         artist['tags'] = [MusicHelper.lastfm_clean_tag(tag) for tag in lf_artist.get_top_tags(limit=6)]
         artist['familiarity'] = self.apis.en_get_artist_familiarity(artist_id)
         artist['trending'] = self.apis.en_get_artist_trending(artist_id)
+        artist['spotify_id'] = sp_album.get('artists', [{}])[0].get('id', '')
+        artist['spotify_url'] = sp_album.get('artists', [{}])[0].get('external_urls', {}).get('spotify', '')
         artist['image'] = artist_image
-
-        lf_album = self.apis.lastfm.get_album(artist_name, mb_album['title'])
-        album_image = ImageItem()
-        album_image['large'] = lf_album.get_cover_image(4)
-        album_image['medium'] = lf_album.get_cover_image(3)
-        album_image['small'] = lf_album.get_cover_image(2)
 
         mb_release = self.apis.mb_get_album_by_id(mb_album['id'])
         album_date_string = mb_release['release-group']['first-release-date']
@@ -75,6 +78,9 @@ class MetacriticSpider(scrapy.Spider):
         album['artist'] = artist
         album['mbid'] = mb_album['id']
         album['name'] = mb_album['title']
+        album['popularity'] = sp_album.get('popularity', 0.0) / 100.0
+        album['spotify_id'] = sp_album.get('id', '')
+        album['spotify_url'] = sp_album.get('external_urls', {}).get('spotify', '')
         album['image'] = album_image
 
         album_score_sel = response.css('.metascore_w span::text')

@@ -25,9 +25,12 @@ class Album(SlugModel):
     tags = TaggableManager()
     date = models.DateField()
     mbid = models.CharField(max_length=255, unique=True)
-    score = models.IntegerField()
+    popularity = models.FloatField(default=0.0)
+    score = models.IntegerField(default=0)
     score_url = models.URLField()
     summary = models.TextField()
+    spotify_id = models.CharField(max_length=255, default='')
+    spotify_url = models.URLField(blank=True, null=True)
     def __str__(self):
         album = (self.name, getattr(self.artist, 'name', '(None)'))
         return '{0} - {1}'.format(*album)
@@ -38,8 +41,10 @@ class Artist(SlugModel):
     bio = models.TextField()
     bio_url = models.URLField()
     mbid = models.CharField(max_length=255, unique=True)
-    familiarity = models.DecimalField(default=0.0, max_digits=17, decimal_places=16)
-    trending = models.DecimalField(default=0.0, max_digits=17, decimal_places=16)
+    familiarity = models.FloatField(default=0.0)
+    spotify_id = models.CharField(max_length=255, default='')
+    spotify_url = models.URLField(blank=True, null=True)
+    trending = models.FloatField(default=0.0)
     def __str__(self):
         return self.name
 
@@ -74,6 +79,8 @@ class Track(BaseModel):
     duration = models.IntegerField()
     mbid = models.CharField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
+    spotify_id = models.CharField(max_length=255, default='')
+    spotify_url = models.URLField(blank=True, null=True)
     def __str__(self):
         track = (getattr(self.album, 'name', '(None'), self.name)
         return '{0} - {1}'.format(*track)
