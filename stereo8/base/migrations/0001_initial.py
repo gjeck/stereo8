@@ -15,19 +15,19 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Album',
             fields=[
-                ('id', models.AutoField(auto_created=True, verbose_name='ID', primary_key=True, serialize=False)),
+                ('id', models.AutoField(primary_key=True, auto_created=True, verbose_name='ID', serialize=False)),
                 ('created_date', models.DateTimeField(auto_now_add=True)),
                 ('updated_date', models.DateTimeField(auto_now=True)),
                 ('name', models.CharField(max_length=255)),
                 ('slug', models.SlugField()),
                 ('date', models.DateField()),
-                ('mbid', models.CharField(unique=True, max_length=255)),
+                ('mbid', models.CharField(max_length=255, unique=True)),
                 ('popularity', models.FloatField(default=0.0)),
                 ('score', models.IntegerField(default=0)),
                 ('score_url', models.URLField()),
                 ('summary', models.TextField()),
-                ('spotify_id', models.CharField(default='', max_length=255)),
-                ('spotify_url', models.URLField(blank=True, null=True)),
+                ('spotify_id', models.CharField(max_length=255, default='')),
+                ('spotify_url', models.URLField(null=True, blank=True)),
             ],
             options={
                 'abstract': False,
@@ -36,17 +36,17 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Artist',
             fields=[
-                ('id', models.AutoField(auto_created=True, verbose_name='ID', primary_key=True, serialize=False)),
+                ('id', models.AutoField(primary_key=True, auto_created=True, verbose_name='ID', serialize=False)),
                 ('created_date', models.DateTimeField(auto_now_add=True)),
                 ('updated_date', models.DateTimeField(auto_now=True)),
                 ('name', models.CharField(max_length=255)),
                 ('slug', models.SlugField()),
                 ('bio', models.TextField()),
                 ('bio_url', models.URLField()),
-                ('mbid', models.CharField(unique=True, max_length=255)),
+                ('mbid', models.CharField(max_length=255, unique=True)),
                 ('familiarity', models.FloatField(default=0.0)),
-                ('spotify_id', models.CharField(default='', max_length=255)),
-                ('spotify_url', models.URLField(blank=True, null=True)),
+                ('spotify_id', models.CharField(max_length=255, default='')),
+                ('spotify_url', models.URLField(null=True, blank=True)),
                 ('trending', models.FloatField(default=0.0)),
             ],
             options={
@@ -56,11 +56,11 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Image',
             fields=[
-                ('id', models.AutoField(auto_created=True, verbose_name='ID', primary_key=True, serialize=False)),
+                ('id', models.AutoField(primary_key=True, auto_created=True, verbose_name='ID', serialize=False)),
                 ('created_date', models.DateTimeField(auto_now_add=True)),
                 ('updated_date', models.DateTimeField(auto_now=True)),
                 ('large', models.URLField()),
-                ('mbid', models.CharField(unique=True, max_length=255)),
+                ('mbid', models.CharField(max_length=255, unique=True)),
                 ('medium', models.URLField()),
                 ('small', models.URLField()),
             ],
@@ -71,10 +71,10 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Publisher',
             fields=[
-                ('id', models.AutoField(auto_created=True, verbose_name='ID', primary_key=True, serialize=False)),
+                ('id', models.AutoField(primary_key=True, auto_created=True, verbose_name='ID', serialize=False)),
                 ('created_date', models.DateTimeField(auto_now_add=True)),
                 ('updated_date', models.DateTimeField(auto_now=True)),
-                ('name', models.CharField(unique=True, max_length=255)),
+                ('name', models.CharField(max_length=255, unique=True)),
                 ('url', models.URLField()),
             ],
             options={
@@ -84,14 +84,15 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Review',
             fields=[
-                ('id', models.AutoField(auto_created=True, verbose_name='ID', primary_key=True, serialize=False)),
+                ('id', models.AutoField(primary_key=True, auto_created=True, verbose_name='ID', serialize=False)),
                 ('created_date', models.DateTimeField(auto_now_add=True)),
                 ('updated_date', models.DateTimeField(auto_now=True)),
                 ('date', models.DateField()),
                 ('score', models.IntegerField()),
                 ('summary', models.TextField()),
-                ('album', models.ForeignKey(to='base.Album', null=True, blank=True)),
-                ('publisher', models.ForeignKey(to='base.Publisher', null=True, blank=True)),
+                ('url', models.URLField(unique=True)),
+                ('album', models.ForeignKey(null=True, to='base.Album', blank=True)),
+                ('publisher', models.ForeignKey(null=True, to='base.Publisher', blank=True)),
             ],
             options={
                 'abstract': False,
@@ -100,15 +101,15 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Track',
             fields=[
-                ('id', models.AutoField(auto_created=True, verbose_name='ID', primary_key=True, serialize=False)),
+                ('id', models.AutoField(primary_key=True, auto_created=True, verbose_name='ID', serialize=False)),
                 ('created_date', models.DateTimeField(auto_now_add=True)),
                 ('updated_date', models.DateTimeField(auto_now=True)),
                 ('duration', models.IntegerField()),
-                ('mbid', models.CharField(unique=True, max_length=255)),
+                ('mbid', models.CharField(max_length=255, unique=True)),
                 ('name', models.CharField(max_length=255)),
-                ('spotify_id', models.CharField(default='', max_length=255)),
-                ('spotify_url', models.URLField(blank=True, null=True)),
-                ('album', models.ForeignKey(to='base.Album', null=True, blank=True)),
+                ('spotify_id', models.CharField(max_length=255, default='')),
+                ('spotify_url', models.URLField(null=True, blank=True)),
+                ('album', models.ForeignKey(null=True, to='base.Album', blank=True)),
             ],
             options={
                 'abstract': False,
@@ -117,26 +118,26 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='artist',
             name='image',
-            field=models.ForeignKey(to='base.Image', null=True, blank=True),
+            field=models.ForeignKey(null=True, to='base.Image', blank=True),
         ),
         migrations.AddField(
             model_name='artist',
             name='tags',
-            field=taggit.managers.TaggableManager(verbose_name='Tags', through='taggit.TaggedItem', to='taggit.Tag', help_text='A comma-separated list of tags.'),
+            field=taggit.managers.TaggableManager(to='taggit.Tag', verbose_name='Tags', help_text='A comma-separated list of tags.', through='taggit.TaggedItem'),
         ),
         migrations.AddField(
             model_name='album',
             name='artist',
-            field=models.ForeignKey(to='base.Artist', null=True, blank=True),
+            field=models.ForeignKey(null=True, to='base.Artist', blank=True),
         ),
         migrations.AddField(
             model_name='album',
             name='image',
-            field=models.ForeignKey(to='base.Image', null=True, blank=True),
+            field=models.ForeignKey(null=True, to='base.Image', blank=True),
         ),
         migrations.AddField(
             model_name='album',
             name='tags',
-            field=taggit.managers.TaggableManager(verbose_name='Tags', through='taggit.TaggedItem', to='taggit.Tag', help_text='A comma-separated list of tags.'),
+            field=taggit.managers.TaggableManager(to='taggit.Tag', verbose_name='Tags', help_text='A comma-separated list of tags.', through='taggit.TaggedItem'),
         ),
     ]
