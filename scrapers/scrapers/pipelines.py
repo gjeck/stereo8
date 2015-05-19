@@ -26,6 +26,8 @@ class DjangoItemPipeline(object):
             'image': artist_image,
             'name': item['artist']['name'],
             'trending': item['artist']['trending'],
+            'spotify_id': item['artist']['spotify_id'],
+            'spotify_url': item['artist']['spotify_url'],
         })
         artist.tags.add(*item['artist']['tags'])
 
@@ -41,10 +43,27 @@ class DjangoItemPipeline(object):
             'image': album_image,
             'name': item['name'],
             'summary': item['summary'],
+            'popularity': item['popularity'],
             'score': item['score'],
             'score_url': item['score_url'],
+            'spotify_id': item['spotify_id'],
+            'spotify_url': item['spotify_url'],
         })
         album.tags.add(*item['tags'])
+
+        for r in item['reviews']:
+            publisher, created = Publisher.objects.update_or_create(url=r['publisher']['url'], defaults={
+                'name': r['publisher']['name'],
+            })
+
+            review, created = Review.objects.update_or_create(url=r['url'], defaults={
+                'album': album,
+                'publisher': publisher,
+                'date': r['date'],
+                'score': r['score'],
+                'summary': r['summary'],
+            })
+
         return item
 
 
