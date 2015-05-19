@@ -66,6 +66,7 @@ class Review(BaseModel):
     date = models.DateField()
     score = models.IntegerField()
     summary = models.TextField()
+    url = models.URLField(unique=True)
     def __str__(self):
         review = (
             getattr(self.publisher, 'name', '(None)'),
