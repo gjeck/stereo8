@@ -1,2 +1,5 @@
 {{ object.name }}
 {{ object.artist.name }}
+{% for tag in object.tags.names %}
+    {{ tag }}
+{% endfor %}
