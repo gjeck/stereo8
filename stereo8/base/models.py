@@ -55,8 +55,8 @@ class Image(BaseModel):
     small = models.URLField()
 
 class Publisher(BaseModel):
-    name = models.CharField(max_length=255, unique=True)
-    url = models.URLField()
+    name = models.CharField(max_length=255)
+    url = models.URLField(unique=True)
     def __str__(self):
         return self.name
 

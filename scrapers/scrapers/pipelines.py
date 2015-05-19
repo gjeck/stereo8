@@ -50,6 +50,20 @@ class DjangoItemPipeline(object):
             'spotify_url': item['spotify_url'],
         })
         album.tags.add(*item['tags'])
+
+        for r in item['reviews']:
+            publisher, created = Publisher.objects.update_or_create(url=r['publisher']['url'], defaults={
+                'name': r['publisher']['name'],
+            })
+
+            review, created = Review.objects.update_or_create(url=r['url'], defaults={
+                'album': album,
+                'publisher': publisher,
+                'date': r['date'],
+                'score': r['score'],
+                'summary': r['summary'],
+            })
+
         return item
 
 

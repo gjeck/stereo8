@@ -2,6 +2,7 @@ import scrapy
 from datetime import datetime
 from scrapers.items import *
 from scrapers.music_apis import MusicHelper
+from urlparse import urlparse
 
 
 class MetacriticSpider(scrapy.Spider):
@@ -17,8 +18,8 @@ class MetacriticSpider(scrapy.Spider):
     def parse(self, response):
         album_links = response.css('li.product').xpath('.//h3/a/@href').extract()
         for link in album_links[-5:]:
-            absoluteURL = self.base_url + link
-            request = scrapy.Request(absoluteURL, callback=self.parse_album_page)
+            absolute_url = self.base_url + link
+            request = scrapy.Request(absolute_url, callback=self.parse_album_page)
             yield request
 
     def parse_album_page(self, response):
@@ -95,9 +96,43 @@ class MetacriticSpider(scrapy.Spider):
         album_tags_sel = response.css('li.summary_detail.product_genre span.data::text').extract()
         album['tags'] = [MusicHelper.clean_tag(tag) for tag in album_tags_sel]
 
-        yield album
+        see_all_reviews = self.safe_extract(response.css('.reviews_module .see_all a::attr(href)'), default=None)
+        if see_all_reviews:
+            absolute_url = self.base_url + see_all_reviews
+            request = scrapy.Request(absolute_url, callback=self.parse_all_reviews_page)
+            request.meta['album'] = album
+            yield request
+        else:
+            reviews = response.css('li.review.critic_review')
+            review_list = []
+            for r in reviews:
+                rev_url = self.safe_extract(r.css('li.review_action a.external::attr(href)'))
+                rev_date = self.safe_extract(r.css('.date::text'))
+
+                publisher = PublisherItem()
+                publisher['name'] = self.safe_extract(r.css('.source a::text'))
+                publisher['url'] = self.parse_base_url(rev_url)
+
+                review = ReviewItem()
+                review['url'] = rev_url
+                review['publisher'] = publisher
+                review['score'] = self.safe_extract(r.css('.review_grade div::text'), default='0')
+                review['summary'] = self.safe_extract(r.css('.review_body::text')).replace('\n', '').strip()
+                review['date'] = datetime.strptime(rev_date, '%b %d, %Y').date()
+                review_list.append(review)
+
+            album['reviews'] = review_list
+            yield album
+
+    def parse_all_reviews_page(self, response):
+        pass
 
     def safe_extract(self, selector, default=''):
         return selector[0].extract().strip() if selector else default
+
+    def parse_base_url(self, full_url):
+        parsed_url = urlparse(full_url)
+        return '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_url)
+
 
 
