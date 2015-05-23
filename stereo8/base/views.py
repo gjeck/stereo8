@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.views.generic import ListView
-from base.models import Artist
+from .models import Artist
 
 
 class ArtistList(ListView):

@@ -1,6 +1,6 @@
 import datetime
 from haystack import indexes
-from base.models import Album
+from .models import Album
 
 
 class AlbumIndex(indexes.SearchIndex, indexes.Indexable):
