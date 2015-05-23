@@ -64,6 +64,15 @@ class DjangoItemPipeline(object):
                 'summary': r['summary'],
             })
 
+        for t in item['tracks']:
+            track, created = Track.objects.update_or_create(mbid=t['mbid'], defaults={
+                'album': album,
+                'duration': t['duration'],
+                'name': t['name'],
+                'spotify_id': t['spotify_id'],
+                'spotify_url': t['spotify_url'],
+            })
+
         return item
 
 

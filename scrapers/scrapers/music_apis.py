@@ -26,6 +26,18 @@ class MusicHelper():
         release_list = response['release-group-list']
         return release_list[0] if release_list else None
 
+    def mb_get_album_by_id(self, id):
+        return musicbrainzngs.get_release_group_by_id(id, 'releases')
+
+    def mb_get_album_tracks(self, album):
+        release = album.get('release-group', {}).get('release-list', [{}])[0]
+        release_id = release.get('id', '')
+        return musicbrainzngs \
+                .get_release_by_id(release_id, 'recordings') \
+                .get('release', {}) \
+                .get('medium-list', [{}])[0] \
+                .get('track-list', [{}])
+
     def sp_find_album(self, name, artist=''):
         query = 'album:{0} artist:{1}'.format(name, artist)
         response = self.spotify.search(query, type='album', limit=1)
@@ -35,9 +47,6 @@ class MusicHelper():
         album_id = response['albums']['items'][0]['id']
         album = self.spotify.album(album_id)
         return album if album else {}
-
-    def mb_get_album_by_id(self, id):
-        return musicbrainzngs.get_release_group_by_id(id)
 
     def en_get_artist_familiarity(self, mbid):
         artist_id = 'musicbrainz:artist:{0}'.format(mbid)

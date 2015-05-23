@@ -8,6 +8,7 @@ class AlbumItem(DjangoItem):
     image = scrapy.Field()
     tags = scrapy.Field()
     reviews = scrapy.Field()
+    tracks = scrapy.Field()
 
 class ArtistItem(DjangoItem):
     django_model = Artist
@@ -24,6 +25,6 @@ class ReviewItem(DjangoItem):
     django_model = Review
     publisher = scrapy.Field()
 
-class Track(DjangoItem):
+class TrackItem(DjangoItem):
     django_model = Track
 

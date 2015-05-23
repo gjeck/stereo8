@@ -96,6 +96,20 @@ class MetacriticSpider(scrapy.Spider):
         album_tags_sel = response.css('li.summary_detail.product_genre span.data::text').extract()
         album['tags'] = [MusicHelper.clean_tag(tag) for tag in album_tags_sel]
 
+        album_tracks = self.apis.mb_get_album_tracks(mb_release)
+        spotify_tracks = sp_album.get('tracks', {}).get('items', [])
+        tracks_list = []
+        for i, t in enumerate(album_tracks):
+            track = TrackItem()
+            track['mbid'] = t.get('recording', {}).get('id', '')
+            track['name'] = t.get('recording', {}).get('title', '')
+            if spotify_tracks[i]:
+                track['spotify_id'] = spotify_tracks[i].get('id', '') 
+                track['duration'] = spotify_tracks[i].get('duration_ms', 0)
+                track['spotify_url'] = spotify_tracks[i].get('external_urls', {}).get('spotify', '') 
+            tracks_list.append(track)
+        album['tracks'] = tracks_list
+
         see_all_reviews = self.safe_extract(response.css('.reviews_module .see_all a::attr(href)'), default=None)
         if see_all_reviews:
             absolute_url = self.base_url + see_all_reviews
