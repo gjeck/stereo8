@@ -3,7 +3,14 @@ from scrapy.contrib.spiders import CrawlSpider, Rule
 from scrapy.contrib.linkextractors import LinkExtractor
 from datetime import datetime
 from dateutil import parser as dateparser
-from scrapers.items import *
+from scrapers.items import (
+    AlbumItem,
+    ArtistItem,
+    ImageItem,
+    TrackItem,
+    ReviewItem,
+    PublisherItem
+)
 from scrapers.music_apis import MusicHelper
 from urlparse import urlparse
 
@@ -23,14 +30,21 @@ class MetacriticSpider(CrawlSpider):
             ]
             self.rules = (
                 Rule(LinkExtractor(allow=r'\/albums\/artist\/[A-z]', )),
-                Rule(LinkExtractor(allow=r'\/music\/.*\/.*', ), callback='parse_album_page'),
+                Rule(
+                    LinkExtractor(allow=r'\/music\/.*\/.*', ),
+                    callback='parse_album_page'
+                ),
             )
         else:
+            to_start = 'browse/albums/release-date/new-releases/date?view=detailed'
             self.start_urls = [
-                '{0}/browse/albums/release-date/new-releases/date?view=detailed'.format(self.base_url),
+                '{0}/{1}'.format(self.base_url, to_start),
             ]
             self.rules = (
-                Rule(LinkExtractor(allow=r'\/music\/.*\/.*'), callback='parse_album_page', follow=True),
+                Rule(
+                    LinkExtractor(allow=r'\/music\/.*\/.*'),
+                    callback='parse_album_page', follow=True
+                ),
             )
         super(MetacriticSpider, self)._compile_rules()
 

@@ -1,21 +1,33 @@
-import os, re, musicbrainzngs, pylast, pyen, spotipy
+import os
+import re
+import musicbrainzngs
+import pylast
+import pyen
+import spotipy
 from django.utils.html import strip_tags
 
 
 class MusicHelper():
 
     def __init__(self):
-        musicbrainzngs.set_useragent('Stereo8', '0.1.0', 'https://github.com/gjeck/stereo8')
+        musicbrainzngs.set_useragent(
+            'Stereo8',
+            '0.1.0',
+            'https://github.com/gjeck/stereo8'
+        )
         self.en = pyen.Pyen()
         self.spotify = spotipy.Spotify()
-        lastfm_api_key = os.environ.get('LAST_FM_API_KEY', '')
-        lastfm_api_secret = os.environ.get('LAST_FM_API_SECRET', '')
-        self.lastfm = pylast.LastFMNetwork(api_key=lastfm_api_key, api_secret=lastfm_api_secret)
+        lastfm_key = os.environ.get('LAST_FM_API_KEY', '')
+        lastfm_secret = os.environ.get('LAST_FM_API_SECRET', '')
+        self.lastfm = pylast.LastFMNetwork(
+            api_key=lastfm_key,
+            api_secret=lastfm_secret
+        )
         self.lastfm.enable_rate_limit()
         self.lastfm.enable_caching()
 
     def mb_find_album(self, name, artist=''):
-        ''' Searches musicbrainzngs release groups and returns the first result (best match)
+        ''' Searches musicbrainzngs release groups and returns the first result
         Args:
             name: the album name
             artist: the artist name
@@ -32,11 +44,10 @@ class MusicHelper():
     def mb_get_album_tracks(self, album):
         release = album.get('release-group', {}).get('release-list', [{}])[0]
         release_id = release.get('id', '')
-        return musicbrainzngs \
-                .get_release_by_id(release_id, 'recordings') \
-                .get('release', {}) \
-                .get('medium-list', [{}])[0] \
-                .get('track-list', [{}])
+        return musicbrainzngs.get_release_by_id(release_id, 'recordings') \
+                             .get('release', {}) \
+                             .get('medium-list', [{}])[0] \
+                             .get('track-list', [{}])
 
     def sp_find_album(self, name, artist=''):
         query = 'album:{0} artist:{1}'.format(name.decode('utf_8'), artist.decode('utf_8'))

@@ -1,6 +1,6 @@
 import datetime
 from haystack import indexes
-from base.models import *
+from base.models import Album
 
 
 class AlbumIndex(indexes.SearchIndex, indexes.Indexable):
@@ -11,4 +11,6 @@ class AlbumIndex(indexes.SearchIndex, indexes.Indexable):
         return Album
 
     def index_queryset(self, using=None):
-        return self.get_model().objects.filter(date__lte=datetime.datetime.now())
+        return self.get_model() \
+                   .objects \
+                   .filter(date__lte=datetime.datetime.now())

@@ -1,7 +1,14 @@
 import django
-from scrapy.exceptions import DropItem
-from scrapers.items import *
-from base.models import *
+from scrapers.items import AlbumItem
+from base.models import (
+    Artist,
+    Album,
+    Image,
+    Review,
+    Publisher,
+    Track
+)
+
 
 class DjangoItemPipeline(object):
     django.setup()
@@ -13,69 +20,86 @@ class DjangoItemPipeline(object):
         return item
 
     def process_album(self, item, spider):
-        artist_image, created = Image.objects.update_or_create(mbid=item['artist']['mbid'], defaults={
-            'large': item['artist']['image']['large'],
-            'medium': item['artist']['image']['medium'],
-            'small': item['artist']['image']['small'],
-        })
+        artist_image, created = Image.objects.update_or_create(
+            mbid=item['artist']['mbid'],
+            defaults={
+                'large': item['artist']['image']['large'],
+                'medium': item['artist']['image']['medium'],
+                'small': item['artist']['image']['small'],
+            }
+        )
 
-        artist, created = Artist.objects.update_or_create(mbid=item['artist']['mbid'], defaults={
-            'bio': item['artist']['bio'],
-            'bio_url': item['artist']['bio_url'],
-            'familiarity': item['artist']['familiarity'],
-            'image': artist_image,
-            'name': item['artist']['name'],
-            'trending': item['artist']['trending'],
-            'spotify_id': item['artist']['spotify_id'],
-            'spotify_url': item['artist']['spotify_url'],
-        })
+        artist, created = Artist.objects.update_or_create(
+            mbid=item['artist']['mbid'],
+            defaults={
+                'bio': item['artist']['bio'],
+                'bio_url': item['artist']['bio_url'],
+                'familiarity': item['artist']['familiarity'],
+                'image': artist_image,
+                'name': item['artist']['name'],
+                'trending': item['artist']['trending'],
+                'spotify_id': item['artist']['spotify_id'],
+                'spotify_url': item['artist']['spotify_url'],
+            }
+        )
         artist.tags.add(*item['artist']['tags'])
 
-        album_image, created = Image.objects.update_or_create(mbid=item['mbid'], defaults={
-            'large': item['image']['large'],
-            'medium': item['image']['medium'],
-            'small': item['image']['small'],
-        })
+        album_image, created = Image.objects.update_or_create(
+            mbid=item['mbid'],
+            defaults={
+                'large': item['image']['large'],
+                'medium': item['image']['medium'],
+                'small': item['image']['small'],
+            }
+        )
 
-        album, created = Album.objects.update_or_create(mbid=item['mbid'], defaults={
-            'artist': artist,
-            'date': item['date'],
-            'image': album_image,
-            'name': item['name'],
-            'summary': item['summary'],
-            'popularity': item['popularity'],
-            'score': item['score'],
-            'score_url': item['score_url'],
-            'spotify_id': item['spotify_id'],
-            'spotify_url': item['spotify_url'],
-        })
+        album, created = Album.objects.update_or_create(
+            mbid=item['mbid'],
+            defaults={
+                'artist': artist,
+                'date': item['date'],
+                'image': album_image,
+                'name': item['name'],
+                'summary': item['summary'],
+                'popularity': item['popularity'],
+                'score': item['score'],
+                'score_url': item['score_url'],
+                'spotify_id': item['spotify_id'],
+                'spotify_url': item['spotify_url'],
+            }
+        )
         album.tags.add(*item['tags'])
 
         for r in item['reviews']:
-            publisher, created = Publisher.objects.update_or_create(url=r['publisher']['url'], defaults={
-                'name': r['publisher']['name'],
-            })
+            publisher, created = Publisher.objects.update_or_create(
+                url=r['publisher']['url'],
+                defaults={
+                    'name': r['publisher']['name'],
+                }
+            )
 
-            review, created = Review.objects.update_or_create(url=r['url'], defaults={
-                'album': album,
-                'publisher': publisher,
-                'date': r['date'],
-                'score': r['score'],
-                'summary': r['summary'],
-            })
+            review, created = Review.objects.update_or_create(
+                url=r['url'],
+                defaults={
+                    'album': album,
+                    'publisher': publisher,
+                    'date': r['date'],
+                    'score': r['score'],
+                    'summary': r['summary'],
+                }
+            )
 
         for t in item['tracks']:
-            track, created = Track.objects.update_or_create(mbid=t['mbid'], defaults={
-                'album': album,
-                'duration': t['duration'],
-                'name': t['name'],
-                'spotify_id': t['spotify_id'],
-                'spotify_url': t['spotify_url'],
-            })
+            track, created = Track.objects.update_or_create(
+                mbid=t['mbid'],
+                defaults={
+                    'album': album,
+                    'duration': t['duration'],
+                    'name': t['name'],
+                    'spotify_id': t['spotify_id'],
+                    'spotify_url': t['spotify_url'],
+                }
+            )
 
         return item
-
-
-
-
 
