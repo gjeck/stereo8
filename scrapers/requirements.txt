@@ -22,6 +22,7 @@ pyasn1-modules==0.0.5
 pycparser==2.10
 pyen==2.3
 pylast==1.2.1
+python-dateutil==2.4.2
 queuelib==1.2.2
 requests==2.2.1
 service-identity==14.0.0

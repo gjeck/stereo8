@@ -20,4 +20,5 @@ ITEM_PIPELINES = {'scrapers.pipelines.DjangoItemPipeline': 1}
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 USER_AGENT = 'scrapers (+https://github.com/gjeck/stereo8)'
+COOKIES_ENABLED = False
 

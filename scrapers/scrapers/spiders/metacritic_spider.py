@@ -1,32 +1,44 @@
 import scrapy
+from scrapy.contrib.spiders import CrawlSpider, Rule
+from scrapy.contrib.linkextractors import LinkExtractor
 from datetime import datetime
+from dateutil import parser as dateparser
 from scrapers.items import *
 from scrapers.music_apis import MusicHelper
 from urlparse import urlparse
 
 
-class MetacriticSpider(scrapy.Spider):
+class MetacriticSpider(CrawlSpider):
     name = 'metacritic'
-    base_url = 'http://www.metacritic.com'
     allowed_domains = ['metacritic.com']
-    start_urls = [
-        'http://www.metacritic.com/browse/albums/release-date/new-releases/date?view=detailed',
-    ]
     download_delay = 3
     apis = MusicHelper()
 
-    def parse(self, response):
-        album_links = response.css('li.product').xpath('.//h3/a/@href').extract()
-        for link in album_links[-5:]:
-            absolute_url = self.base_url + link
-            request = scrapy.Request(absolute_url, callback=self.parse_album_page)
-            yield request
+    def __init__(self, crawl_all=None, *args, **kwargs):
+        super(MetacriticSpider, self).__init__(*args, **kwargs)
+        self.base_url = 'http://www.metacritic.com'
+        if crawl_all:
+            self.start_urls = [
+                '{0}/browse/albums/artist'.format(self.base_url),
+            ]
+            self.rules = (
+                Rule(LinkExtractor(allow=r'\/albums\/artist\/[A-z]', )),
+                Rule(LinkExtractor(allow=r'\/music\/.*\/.*', ), callback='parse_album_page'),
+            )
+        else:
+            self.start_urls = [
+                '{0}/browse/albums/release-date/new-releases/date?view=detailed'.format(self.base_url),
+            ]
+            self.rules = (
+                Rule(LinkExtractor(allow=r'\/music\/.*\/.*'), callback='parse_album_page', follow=True),
+            )
+        super(MetacriticSpider, self)._compile_rules()
 
     def parse_album_page(self, response):
         meta_info = response.css('div.content_head.product_content_head.album_content_head')
         release_date_sel = meta_info.css('li.summary_detail.release span.data::text')
         release_date = self.safe_extract(release_date_sel)
-        release_date = datetime.strptime(release_date, '%b %d, %Y').date()
+        release_date = dateparser.parse(release_date).date()
 
         # External APIs have no info on upcoming releases, so we ignore them
         if datetime.now().date() < release_date:
@@ -73,7 +85,7 @@ class MetacriticSpider(scrapy.Spider):
 
         mb_release = self.apis.mb_get_album_by_id(mb_album['id'])
         album_date_string = mb_release['release-group']['first-release-date']
-        album_date = datetime.strptime(album_date_string, '%Y-%m-%d')
+        album_date = dateparser.parse(album_date_string).date()
         album = AlbumItem()
         album['date'] = album_date
         album['artist'] = artist
@@ -98,12 +110,13 @@ class MetacriticSpider(scrapy.Spider):
 
         album_tracks = self.apis.mb_get_album_tracks(mb_release)
         spotify_tracks = sp_album.get('tracks', {}).get('items', [])
+        spotify_len = len(spotify_tracks)
         tracks_list = []
         for i, t in enumerate(album_tracks):
             track = TrackItem()
             track['mbid'] = t.get('recording', {}).get('id', '')
             track['name'] = t.get('recording', {}).get('title', '')
-            if spotify_tracks[i]:
+            if i < spotify_len:
                 track['spotify_id'] = spotify_tracks[i].get('id', '') 
                 track['duration'] = spotify_tracks[i].get('duration_ms', 0)
                 track['spotify_url'] = spotify_tracks[i].get('external_urls', {}).get('spotify', '') 
@@ -148,7 +161,7 @@ class MetacriticSpider(scrapy.Spider):
             review['publisher'] = publisher
             review['score'] = self.safe_extract(r.css('.review_grade div::text'), default='0')
             review['summary'] = self.safe_extract(r.css('.review_body::text')).replace('\n', '').strip()
-            review['date'] = datetime.strptime(rev_date, '%b %d, %Y').date()
+            review['date'] = dateparser.parse(rev_date).date()
             review_list.append(review)
         return review_list
 
