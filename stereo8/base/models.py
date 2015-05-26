@@ -34,8 +34,8 @@ class Album(SlugModel):
     score = models.IntegerField(default=0)
     score_url = models.URLField()
     summary = models.TextField()
-    spotify_id = models.CharField(max_length=255, default='')
-    spotify_url = models.URLField(blank=True, null=True)
+    spotify_id = models.CharField(max_length=255)
+    spotify_url = models.URLField(blank=True)
 
     def __str__(self):
         album = (self.name, getattr(self.artist, 'name', '(None)'))
@@ -49,8 +49,8 @@ class Artist(SlugModel):
     bio_url = models.URLField()
     mbid = models.CharField(max_length=255, unique=True)
     familiarity = models.FloatField(default=0.0)
-    spotify_id = models.CharField(max_length=255, default='')
-    spotify_url = models.URLField(blank=True, null=True)
+    spotify_id = models.CharField(max_length=255)
+    spotify_url = models.URLField(blank=True)
     trending = models.FloatField(default=0.0)
 
     def __str__(self):
@@ -94,8 +94,8 @@ class Track(BaseModel):
     duration = models.IntegerField()
     mbid = models.CharField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
-    spotify_id = models.CharField(max_length=255, default='')
-    spotify_url = models.URLField(blank=True, null=True)
+    spotify_id = models.CharField(max_length=255)
+    spotify_url = models.URLField(blank=True)
 
     def __str__(self):
         track = (getattr(self.album, 'name', '(None'), self.name)
