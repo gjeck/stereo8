@@ -49,14 +49,18 @@ class MetacriticSpider(CrawlSpider):
         super(MetacriticSpider, self)._compile_rules()
 
     def parse_album_page(self, response):
-        meta_info = response.css('div.content_head.product_content_head.album_content_head')
-        release_date_sel = meta_info.css('li.summary_detail.release span.data::text')
+        meta_info = response.css(
+            'div.content_head.product_content_head.album_content_head'
+        )
+        release_date_sel = meta_info.css(
+            'li.summary_detail.release span.data::text'
+        )
         release_date = self.safe_extract(release_date_sel)
         release_date = dateparser.parse(release_date).date()
 
         # External APIs have no info on upcoming releases, so we ignore them
         if datetime.now().date() < release_date:
-            return 
+            return
 
         album_name_sel = meta_info.css('span a.hover_none span::text')
         album_name = self.safe_extract(album_name_sel)
@@ -84,17 +88,27 @@ class MetacriticSpider(CrawlSpider):
         album_image['medium'] = lf_album.get_cover_image(3)
         album_image['small'] = lf_album.get_cover_image(2)
 
-        sp_album = self.apis.sp_find_album(mb_album['title'], artist=artist_name)
+        sp_album = self.apis.sp_find_album(
+            mb_album['title'], artist=artist_name
+        )
         artist = ArtistItem()
         artist['mbid'] = artist_id
         artist['name'] = artist_name
-        artist['bio'] = MusicHelper.lastfm_clean_summary(lf_artist.get_bio_summary())
+        artist['bio'] = MusicHelper.lastfm_clean_summary(
+            lf_artist.get_bio_summary()
+        )
         artist['bio_url'] = lf_artist.get_url()
-        artist['tags'] = [MusicHelper.lastfm_clean_tag(tag) for tag in lf_artist.get_top_tags(limit=6)]
+        artist['tags'] = [
+            MusicHelper.lastfm_clean_tag(tag) for tag
+            in lf_artist.get_top_tags(limit=6)
+        ]
         artist['familiarity'] = self.apis.en_get_artist_familiarity(artist_id)
         artist['trending'] = self.apis.en_get_artist_trending(artist_id)
-        artist['spotify_id'] = sp_album.get('artists', [{}])[0].get('id', '')
-        artist['spotify_url'] = sp_album.get('artists', [{}])[0].get('external_urls', {}).get('spotify', '')
+        artist['spotify_id'] = sp_album.get('artists', [{}])[0] \
+                                       .get('id', '')
+        artist['spotify_url'] = sp_album.get('artists', [{}])[0] \
+                                        .get('external_urls', {}) \
+                                        .get('spotify', '')
         artist['image'] = artist_image
 
         mb_release = self.apis.mb_get_album_by_id(mb_album['id'])
@@ -107,7 +121,8 @@ class MetacriticSpider(CrawlSpider):
         album['name'] = mb_album['title']
         album['popularity'] = sp_album.get('popularity', 0.0) / 100.0
         album['spotify_id'] = sp_album.get('id', '')
-        album['spotify_url'] = sp_album.get('external_urls', {}).get('spotify', '')
+        album['spotify_url'] = sp_album.get('external_urls', {}) \
+                                       .get('spotify', '')
         album['image'] = album_image
 
         album_score_sel = response.css('.metascore_w span::text')
@@ -115,11 +130,15 @@ class MetacriticSpider(CrawlSpider):
         album['score'] = album_score
         album['score_url'] = response.url
 
-        album_summary_sel = response.css('.summary_detail.product_summary span.data span::text')
+        album_summary_sel = response.css(
+            '.summary_detail.product_summary span.data span::text'
+        )
         album_summary = self.safe_extract(album_summary_sel)
         album['summary'] = album_summary
 
-        album_tags_sel = response.css('li.summary_detail.product_genre span.data::text').extract()
+        album_tags_sel = response.css(
+            'li.summary_detail.product_genre span.data::text'
+        ).extract()
         album['tags'] = [MusicHelper.clean_tag(tag) for tag in album_tags_sel]
 
         album_tracks = self.apis.mb_get_album_tracks(mb_release)
@@ -131,16 +150,24 @@ class MetacriticSpider(CrawlSpider):
             track['mbid'] = t.get('recording', {}).get('id', '')
             track['name'] = t.get('recording', {}).get('title', '')
             if i < spotify_len:
-                track['spotify_id'] = spotify_tracks[i].get('id', '') 
-                track['duration'] = spotify_tracks[i].get('duration_ms', 0)
-                track['spotify_url'] = spotify_tracks[i].get('external_urls', {}).get('spotify', '') 
+                s_track = spotify_tracks[i]
+                track['spotify_id'] = s_track.get('id', '')
+                track['duration'] = s_track.get('duration_ms', 0)
+                track['spotify_url'] = s_track.get('external_urls', {}) \
+                                              .get('spotify', '')
             tracks_list.append(track)
         album['tracks'] = tracks_list
 
-        see_all_reviews = self.safe_extract(response.css('.reviews_module .see_all a::attr(href)'), default=None)
+        see_all_reviews = self.safe_extract(
+            response.css('.reviews_module .see_all a::attr(href)'),
+            default=None
+        )
         if see_all_reviews:
             absolute_url = self.base_url + see_all_reviews
-            request = scrapy.Request(absolute_url, callback=self.parse_all_reviews_page)
+            request = scrapy.Request(
+                absolute_url,
+                callback=self.parse_all_reviews_page
+            )
             request.meta['album'] = album
             yield request
         else:
@@ -173,8 +200,12 @@ class MetacriticSpider(CrawlSpider):
             review = ReviewItem()
             review['url'] = rev_url
             review['publisher'] = publisher
-            review['score'] = self.safe_extract(r.css('.review_grade div::text'), default='0')
-            review['summary'] = self.safe_extract(r.css('.review_body::text')).replace('\n', '').strip()
+            review['score'] = self.safe_extract(
+                r.css('.review_grade div::text'), default='0'
+            )
+            review['summary'] = self.safe_extract(
+                r.css('.review_body::text')
+            ).replace('\n', '').strip()
             review['date'] = dateparser.parse(rev_date).date()
             review_list.append(review)
         return review_list

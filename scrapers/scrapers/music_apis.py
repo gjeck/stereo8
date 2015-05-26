@@ -34,7 +34,11 @@ class MusicHelper():
         Returns:
             dict with first result
         '''
-        response = musicbrainzngs.search_release_groups(query=name, artist=artist, limit=1)
+        response = musicbrainzngs.search_release_groups(
+            query=name,
+            artist=artist,
+            limit=1
+        )
         release_list = response['release-group-list']
         return release_list[0] if release_list else None
 
@@ -50,7 +54,10 @@ class MusicHelper():
                              .get('track-list', [{}])
 
     def sp_find_album(self, name, artist=''):
-        query = 'album:{0} artist:{1}'.format(name.decode('utf_8'), artist.decode('utf_8'))
+        query = 'album:{0} artist:{1}'.format(
+            name.decode('utf_8'),
+            artist.decode('utf_8')
+        )
         response = self.spotify.search(query, type='album', limit=1)
         response_album = response['albums']['items']
         if not response_album:
