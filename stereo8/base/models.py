@@ -38,8 +38,7 @@ class Album(SlugModel):
     spotify_url = models.URLField(blank=True)
 
     def __str__(self):
-        album = (self.name, getattr(self.artist, 'name', '(None)'))
-        return '{0} - {1}'.format(*album)
+        return self.name
 
 
 class Artist(SlugModel):
@@ -63,6 +62,9 @@ class Image(BaseModel):
     medium = models.URLField()
     small = models.URLField()
 
+    def __str__(self):
+        return self.mbid
+
 
 class Publisher(BaseModel):
     name = models.CharField(max_length=255)
@@ -81,12 +83,7 @@ class Review(BaseModel):
     url = models.URLField(unique=True)
 
     def __str__(self):
-        review = (
-            getattr(self.publisher, 'name', '(None)'),
-            getattr(self.album, 'name', '(None)'),
-            self.score
-        )
-        return '{0} - {1} - {2}'.format(*review)
+        return '{0}'.format(getattr(self.publisher, 'name', '(None)'))
 
 
 class Track(BaseModel):
@@ -98,6 +95,5 @@ class Track(BaseModel):
     spotify_url = models.URLField(blank=True)
 
     def __str__(self):
-        track = (getattr(self.album, 'name', '(None'), self.name)
-        return '{0} - {1}'.format(*track)
+        return self.name
 
