@@ -19,7 +19,7 @@ class MetacriticSpider(CrawlSpider):
     name = 'metacritic'
     allowed_domains = ['metacritic.com']
     download_delay = 3
-    apis = MusicHelper()
+    apis = MusicHelper.build()
 
     def __init__(self, crawl_all=None, *args, **kwargs):
         super(MetacriticSpider, self).__init__(*args, **kwargs)
