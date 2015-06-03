@@ -75,11 +75,9 @@ class MusicHelper():
         )
         en = pyen.Pyen()
         spotify = spotipy.Spotify()
-        lastfm_key = os.environ.get('LAST_FM_API_KEY', '')
-        lastfm_secret = os.environ.get('LAST_FM_API_SECRET', '')
         lastfm = pylast.LastFMNetwork(
-            api_key=lastfm_key,
-            api_secret=lastfm_secret
+            api_key=os.environ.get('LAST_FM_API_KEY', ''),
+            api_secret=os.environ.get('LAST_FM_API_SECRET', '')
         )
         lastfm.enable_rate_limit()
         lastfm.enable_caching()
