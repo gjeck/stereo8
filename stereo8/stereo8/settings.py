@@ -21,9 +21,7 @@ SECRET_KEY = os.environ.get('DJANGO_PRODUCTION_KEY', '007defaultDevelopmentKey')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
 TEMPLATE_DEBUG = True
-
 ALLOWED_HOSTS = []
 
 
@@ -38,6 +36,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'taggit',
     'haystack',
+    'rest_framework',
     'base',
 )
 
