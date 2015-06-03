@@ -3,6 +3,5 @@ from . import views
 
 urlpatterns = patterns(
     '',
-    url(r'^artists/$', views.ArtistList.as_view()),
 )
 
