@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from haystack.query import SearchQuerySet, EmptySearchQuerySet
-from rest_framework import generics, mixins, viewsets
+from rest_framework import generics
 from .models import (
     Album,
     Artist,
@@ -25,16 +25,24 @@ class AlbumList(generics.ListCreateAPIView):
     serializer_class = AlbumSerializer
 
 
-class AlbumSearchViewSet(generics.ListCreateAPIView):
+class AlbumSearchQuerySet(SearchQuerySet):
+    model = Album
+
+class EmptyAlbumSearchQuerySet(EmptySearchQuerySet):
+    model = Album
+
+class AlbumSearchViewSet(generics.ListAPIView):
     serializer_class = AlbumIndexSerializer
 
     def get_queryset(self, *args, **kwargs):
         request = self.request
-        queryset = EmptySearchQuerySet()
+        queryset = EmptyAlbumSearchQuerySet()
 
         if request.GET.get('q') is not None:
             query = request.GET.get('q')
-            queryset = SearchQuerySet().filter(content=query)
+            queryset = AlbumSearchQuerySet() \
+                            .filter(content=query) \
+                            .load_all()
 
         return queryset
 

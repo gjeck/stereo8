@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from haystack.models import SearchResult
+from .search_indexes import AlbumIndex
 from .models import (
     Album,
     Artist,
@@ -16,10 +16,9 @@ class AlbumSerializer(serializers.ModelSerializer):
         model = Album
 
 
-class AlbumIndexSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = SearchResult
+class AlbumIndexSerializer(serializers.Serializer):
+    object = AlbumSerializer()
+    text = serializers.CharField()
 
 
 class ArtistSerializer(serializers.ModelSerializer):

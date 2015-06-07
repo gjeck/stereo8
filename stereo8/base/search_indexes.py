@@ -14,3 +14,4 @@ class AlbumIndex(indexes.SearchIndex, indexes.Indexable):
         return self.get_model() \
                    .objects \
                    .filter(date__lte=datetime.datetime.now())
+
