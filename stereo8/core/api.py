@@ -10,7 +10,7 @@ urlpatterns = patterns(
     ),
     url(
         regex=r'^search/$',
-        view=base_views.AlbumSearchViewSet.as_view(),
+        view=base_views.SearchViewSet.as_view(),
         name='search'
     ),
     url(

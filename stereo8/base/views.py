@@ -4,6 +4,7 @@ from rest_framework import generics
 from .models import (
     Album,
     Artist,
+    BaseModel,
     Image,
     Publisher,
     Review,
@@ -25,26 +26,28 @@ class AlbumList(generics.ListCreateAPIView):
     serializer_class = AlbumSerializer
 
 
-class AlbumSearchQuerySet(SearchQuerySet):
-    model = Album
+class BaseSearchQuerySet(SearchQuerySet):
+    model = BaseModel
 
-class EmptyAlbumSearchQuerySet(EmptySearchQuerySet):
-    model = Album
+class EmptyBaseSearchQuerySet(EmptySearchQuerySet):
+    model = BaseModel
 
-class AlbumSearchViewSet(generics.ListAPIView):
-    serializer_class = AlbumIndexSerializer
+class SearchViewSet(generics.ListAPIView):
 
     def get_queryset(self, *args, **kwargs):
         request = self.request
-        queryset = EmptyAlbumSearchQuerySet()
+        queryset = EmptyBaseSearchQuerySet()
 
         if request.GET.get('q') is not None:
             query = request.GET.get('q')
-            queryset = AlbumSearchQuerySet() \
+            queryset = BaseSearchQuerySet() \
                             .filter(content=query) \
                             .load_all()
 
         return queryset
+
+    def get_serializer_class(self, *args, **kwargs):
+        return AlbumIndexSerializer
 
 
 class ArtistList(generics.ListCreateAPIView):
