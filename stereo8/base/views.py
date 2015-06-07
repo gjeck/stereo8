@@ -12,7 +12,7 @@ from .models import (
 )
 from .serializers import (
     AlbumSerializer,
-    AlbumIndexSerializer,
+    BaseIndexSerializer,
     ArtistSerializer,
     ImageSerializer,
     PublisherSerializer,
@@ -29,8 +29,10 @@ class AlbumList(generics.ListCreateAPIView):
 class BaseSearchQuerySet(SearchQuerySet):
     model = BaseModel
 
+
 class EmptyBaseSearchQuerySet(EmptySearchQuerySet):
     model = BaseModel
+
 
 class SearchViewSet(generics.ListAPIView):
 
@@ -42,12 +44,11 @@ class SearchViewSet(generics.ListAPIView):
             query = request.GET.get('q')
             queryset = BaseSearchQuerySet() \
                             .filter(content=query) \
-                            .load_all()
-
+        
         return queryset
 
     def get_serializer_class(self, *args, **kwargs):
-        return AlbumIndexSerializer
+        return BaseIndexSerializer
 
 
 class ArtistList(generics.ListCreateAPIView):

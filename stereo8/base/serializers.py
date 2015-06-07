@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from .search_indexes import AlbumIndex
 from .models import (
     Album,
     Artist,
@@ -16,15 +15,21 @@ class AlbumSerializer(serializers.ModelSerializer):
         model = Album
 
 
-class AlbumIndexSerializer(serializers.Serializer):
-    object = AlbumSerializer()
-    text = serializers.CharField()
-
-
 class ArtistSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Artist
+
+
+class BaseIndexSerializer(serializers.Serializer):
+    model_name = serializers.CharField()
+    object = serializers.SerializerMethodField()
+
+    def get_object(self, obj):
+        serializer_name = obj.model_name.capitalize() + 'Serializer'
+        serializer_class = eval(serializer_name)
+        serializer = serializer_class(obj.object)
+        return serializer.data
 
 
 class ImageSerializer(serializers.ModelSerializer):
