@@ -1,17 +1,18 @@
 from django.shortcuts import render
-from django.views.generic import ListView
-from rest_framework import generics
+from haystack.query import SearchQuerySet, EmptySearchQuerySet
+from rest_framework import generics, mixins, viewsets
 from .models import (
-    Artist,
     Album,
+    Artist,
     Image,
     Publisher,
     Review,
     Track,
 )
 from .serializers import (
-    ArtistSerializer,
     AlbumSerializer,
+    AlbumIndexSerializer,
+    ArtistSerializer,
     ImageSerializer,
     PublisherSerializer,
     ReviewSerializer,
@@ -19,14 +20,28 @@ from .serializers import (
 )
 
 
-class ArtistList(generics.ListCreateAPIView):
-    queryset = Artist.objects.all()
-    serializer_class = ArtistSerializer
-
-
 class AlbumList(generics.ListCreateAPIView):
     queryset = Album.objects.all()
     serializer_class = AlbumSerializer
+
+
+class AlbumSearchViewSet(generics.ListCreateAPIView):
+    serializer_class = AlbumIndexSerializer
+
+    def get_queryset(self, *args, **kwargs):
+        request = self.request
+        queryset = EmptySearchQuerySet()
+
+        if request.GET.get('q') is not None:
+            query = request.GET.get('q')
+            queryset = SearchQuerySet().filter(content=query)
+
+        return queryset
+
+
+class ArtistList(generics.ListCreateAPIView):
+    queryset = Artist.objects.all()
+    serializer_class = ArtistSerializer
 
 
 class ImageList(generics.ListCreateAPIView):

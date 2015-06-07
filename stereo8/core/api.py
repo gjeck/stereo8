@@ -4,14 +4,19 @@ from base import views as base_views
 urlpatterns = patterns(
     '',
     url(
-        regex=r'^artists/$',
-        view=base_views.ArtistList.as_view(),
-        name='artist-list'
-    ),
-    url(
         regex=r'^albums/$',
         view=base_views.AlbumList.as_view(),
         name='album-list'
+    ),
+    url(
+        regex=r'^search/$',
+        view=base_views.AlbumSearchViewSet.as_view(),
+        name='search'
+    ),
+    url(
+        regex=r'^artists/$',
+        view=base_views.ArtistList.as_view(),
+        name='artist-list'
     ),
     url(
         regex=r'^images/$',

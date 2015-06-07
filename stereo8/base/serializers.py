@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from haystack.models import SearchResult
 from .models import (
     Album,
     Artist,
@@ -13,6 +14,12 @@ class AlbumSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Album
+
+
+class AlbumIndexSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = SearchResult
 
 
 class ArtistSerializer(serializers.ModelSerializer):
