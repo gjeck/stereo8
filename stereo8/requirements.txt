@@ -1,8 +1,10 @@
 Django==1.8.1
+Markdown==2.6.2
 chardet==2.2.1
 colorama==0.2.5
 django-haystack==2.3.1
 django-taggit==0.14.0
+djangorestframework==3.1.2
 elasticsearch==1.4.0
 html5lib==0.999
 psycopg2==2.6

@@ -21,9 +21,7 @@ SECRET_KEY = os.environ.get('DJANGO_PRODUCTION_KEY', '007defaultDevelopmentKey')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
 TEMPLATE_DEBUG = True
-
 ALLOWED_HOSTS = []
 
 
@@ -38,6 +36,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'taggit',
     'haystack',
+    'rest_framework',
     'base',
 )
 
@@ -78,6 +77,18 @@ HAYSTACK_CONNECTIONS = {
         'URL': 'http://{0}:9200/'.format(os.environ.get('SEARCH_PORT_9200_TCP_ADDR', '')),
         'INDEX_NAME': 'haystack',
     }
+}
+
+# API
+
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 50,
 }
 
 # Internationalization
