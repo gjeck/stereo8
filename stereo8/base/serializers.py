@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from taggit.models import Tag
 from .models import (
     Album,
     Artist,
@@ -24,6 +25,7 @@ class ArtistSerializer(serializers.ModelSerializer):
 class BaseIndexSerializer(serializers.Serializer):
     model_name = serializers.CharField()
     object = serializers.SerializerMethodField()
+    score = serializers.FloatField()
 
     def get_object(self, obj):
         serializer_name = obj.model_name.capitalize() + 'Serializer'
@@ -48,6 +50,12 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
+
+
+class TagSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Tag
 
 
 class TrackSerializer(serializers.ModelSerializer):

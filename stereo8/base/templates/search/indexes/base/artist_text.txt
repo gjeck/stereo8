@@ -1,5 +1,5 @@
 {{ object.name }}
-{% for tag in object.tags.names %}
+{% for tag in object.tags.slugs %}
     {{ tag }}
 {% endfor %}
 
