@@ -12,10 +12,11 @@ django-haystack==2.3.1
 django-taggit==0.14.0
 djangorestframework==3.1.2
 enum34==1.0.4
+fuzzywuzzy==0.5.0
 gyp==0.1
 html5lib==0.999
 lxml==3.4.2
--e git+https://github.com/alastair/python-musicbrainzngs.git@dc12e716d93a6e59172b5638c4c73b3a5f992e18#egg=musicbrainzngs-master
+-e git+https://github.com/alastair/python-musicbrainzngs.git@dc12e716d93a6e59172b5638c4c73b3a5f992e18#egg=musicbrainzngs-dev
 psycopg2==2.6
 pyOpenSSL==0.14
 pyasn1==0.1.7
@@ -23,6 +24,7 @@ pyasn1-modules==0.0.5
 pycparser==2.10
 pyen==2.3
 pylast==1.2.1
+python-Levenshtein==0.12.0
 python-dateutil==2.4.2
 queuelib==1.2.2
 requests==2.2.1

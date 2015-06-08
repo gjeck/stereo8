@@ -35,7 +35,7 @@ class Album(SlugModel):
     score_url = models.URLField()
     summary = models.TextField()
     spotify_id = models.CharField(max_length=255)
-    spotify_url = models.URLField(blank=True)
+    spotify_url = models.URLField(blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -49,7 +49,7 @@ class Artist(SlugModel):
     mbid = models.CharField(max_length=255, unique=True)
     familiarity = models.FloatField(default=0.0)
     spotify_id = models.CharField(max_length=255)
-    spotify_url = models.URLField(blank=True)
+    spotify_url = models.URLField(blank=True, null=True)
     trending = models.FloatField(default=0.0)
 
     def __str__(self):
@@ -57,10 +57,10 @@ class Artist(SlugModel):
 
 
 class Image(BaseModel):
-    large = models.URLField()
+    large = models.URLField(blank=True, null=True)
     mbid = models.CharField(max_length=255, unique=True)
-    medium = models.URLField()
-    small = models.URLField()
+    medium = models.URLField(blank=True, null=True)
+    small = models.URLField(blank=True, null=True)
 
     def __str__(self):
         return self.mbid
@@ -92,7 +92,7 @@ class Track(BaseModel):
     mbid = models.CharField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
     spotify_id = models.CharField(max_length=255)
-    spotify_url = models.URLField(blank=True)
+    spotify_url = models.URLField(blank=True, null=True)
 
     def __str__(self):
         return self.name

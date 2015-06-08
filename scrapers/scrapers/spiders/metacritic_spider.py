@@ -3,6 +3,7 @@ from scrapy.contrib.spiders import CrawlSpider, Rule
 from scrapy.contrib.linkextractors import LinkExtractor
 from datetime import datetime
 from dateutil import parser as dateparser
+from fuzzywuzzy import fuzz
 from scrapers.items import (
     AlbumItem,
     ArtistItem,
@@ -73,7 +74,13 @@ class MetacriticSpider(CrawlSpider):
 
         artist_credit = mb_album['artist-credit'][0]['artist']['name']
         artist_id = mb_album['artist-credit'][0]['artist']['id']
-        if artist_name.lower() != artist_credit.lower():
+        artist_confidence = fuzz.token_sort_ratio(
+            artist_name.lower(),
+            artist_credit.lower()
+        )
+
+        # Do some fuzzy matching on artist, return if not confident
+        if artist_confidence < 55:
             return
 
         lf_artist = self.apis.lastfm.get_artist_by_mbid(artist_id)
@@ -147,8 +154,10 @@ class MetacriticSpider(CrawlSpider):
         tracks_list = []
         for i, t in enumerate(album_tracks):
             track = TrackItem()
-            track['mbid'] = t.get('recording', {}).get('id', '')
-            track['name'] = t.get('recording', {}).get('title', '')
+            recording = t.get('recording', {})
+            track['mbid'] = recording.get('id', '')
+            track['name'] = recording.get('title', '')
+            track['duration'] = recording.get('duration', 0)
             if i < spotify_len:
                 s_track = spotify_tracks[i]
                 track['spotify_id'] = s_track.get('id', '')
