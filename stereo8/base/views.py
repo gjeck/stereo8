@@ -70,6 +70,41 @@ class SearchViewSet(generics.ListAPIView):
             return list(allowed_models.values())
 
 
+class AutoSearchViewSet(generics.ListAPIView):
+
+    def get_queryset(self, *args, **kwargs):
+        request = self.request
+        queryset = EmptyBaseSearchQuerySet()
+        query = request.GET.get('q')
+
+        if query is not None:
+            models = self.get_models(request)
+            queryset = BaseSearchQuerySet() \
+                            .models(*models) \
+                            .autocomplete(content_auto=query) \
+        
+        return queryset
+
+    def get_serializer_class(self, *args, **kwargs):
+        return BaseIndexSerializer
+
+    def get_models(self, request):
+        allowed_models = {
+            'artist': Artist,
+            'album': Album,
+            'tag': Tag,
+        }
+        param = request.GET.get('models')
+        if param:
+            model_names = param.split(',')
+            model_list = [
+                allowed_models.get(model.lower()) for model in model_names
+            ]
+            return list(filter(None, model_list))
+        else:
+            return list(allowed_models.values())
+
+
 class ArtistList(generics.ListCreateAPIView):
     queryset = Artist.objects.all()
     serializer_class = ArtistSerializer

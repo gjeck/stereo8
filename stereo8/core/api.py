@@ -14,6 +14,11 @@ urlpatterns = patterns(
         name='search'
     ),
     url(
+        regex=r'^autosearch/$',
+        view=base_views.AutoSearchViewSet.as_view(),
+        name='autosearch'
+    ),
+    url(
         regex=r'^artists/$',
         view=base_views.ArtistList.as_view(),
         name='artist-list'
