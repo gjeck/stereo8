@@ -1,6 +1,6 @@
 import scrapy
-from scrapy.contrib.spiders import CrawlSpider, Rule
-from scrapy.contrib.linkextractors import LinkExtractor
+from scrapy.spiders import CrawlSpider, Rule
+from scrapy.linkextractors import LinkExtractor
 from datetime import datetime
 from dateutil import parser as dateparser
 from fuzzywuzzy import fuzz
@@ -61,6 +61,7 @@ class MetacriticSpider(CrawlSpider):
 
         # External APIs have no info on upcoming releases, so we ignore them
         if datetime.now().date() < release_date:
+            self.logger.info('Album has not been released yet')
             return
 
         album_name_sel = meta_info.css('span a.hover_none span::text')
@@ -70,6 +71,7 @@ class MetacriticSpider(CrawlSpider):
 
         mb_album = self.apis.mb_find_album(album_name, artist=artist_name)
         if not mb_album:
+            self.logger.info('Album not found on musicbrainz')
             return
 
         artist_credit = mb_album['artist-credit'][0]['artist']['name']
@@ -81,6 +83,7 @@ class MetacriticSpider(CrawlSpider):
 
         # Do some fuzzy matching on artist, return if not confident
         if artist_confidence < 55:
+            self.logger.info('Fuzzy matching confidence too low to continue')
             return
 
         lf_artist = self.apis.lastfm.get_artist_by_mbid(artist_id)

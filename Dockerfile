@@ -1,4 +1,4 @@
-FROM ubuntu:14.04
+FROM ubuntu:14.04.2
 MAINTAINER Greg Jeckell, gregory.jeckell@gmail.com
 
 RUN apt-get update \
@@ -16,9 +16,9 @@ RUN apt-get update \
     make \
     python3.4 \
     python3.4-dev \
-    python-dev \
     python3-pip \
-    python-pip \
+    python-dev \
+    python-setuptools \
     curl \
     git \
     vim \
@@ -31,4 +31,5 @@ RUN mkdir /code
 WORKDIR /code
 ADD . /code/
 RUN pip3 install -r stereo8/requirements.txt
+RUN easy_install-2.7 pip
 RUN pip install -r scrapers/requirements.txt --src=/.pip_temp
