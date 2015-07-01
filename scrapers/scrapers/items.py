@@ -1,5 +1,5 @@
 import scrapy
-from scrapy.contrib.djangoitem import DjangoItem
+from scrapy_djangoitem import DjangoItem
 from base.models import Album, Artist, Image, Publisher, Review, Track
 
 
