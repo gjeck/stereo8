@@ -37,6 +37,9 @@ class EmptyBaseSearchQuerySet(EmptySearchQuerySet):
 
 class SearchViewSet(generics.ListAPIView):
 
+    def get_serializer_class(self, *args, **kwargs):
+        return BaseIndexSerializer
+
     def get_queryset(self, *args, **kwargs):
         request = self.request
         queryset = EmptyBaseSearchQuerySet()
@@ -44,14 +47,9 @@ class SearchViewSet(generics.ListAPIView):
 
         if query is not None:
             models = self.get_models(request)
-            queryset = BaseSearchQuerySet() \
-                            .models(*models) \
-                            .filter(content=query) \
+            queryset = self.filtered_query_set(query, models)
         
         return queryset
-
-    def get_serializer_class(self, *args, **kwargs):
-        return BaseIndexSerializer
 
     def get_models(self, request):
         allowed_models = {
@@ -69,40 +67,18 @@ class SearchViewSet(generics.ListAPIView):
         else:
             return list(allowed_models.values())
 
+    def filtered_query_set(self, query, models):
+        return BaseSearchQuerySet() \
+                    .models(*models) \
+                    .filter(content=query)
 
-class AutoSearchViewSet(generics.ListAPIView):
 
-    def get_queryset(self, *args, **kwargs):
-        request = self.request
-        queryset = EmptyBaseSearchQuerySet()
-        query = request.GET.get('q')
+class AutoSearchViewSet(SearchViewSet):
 
-        if query is not None:
-            models = self.get_models(request)
-            queryset = BaseSearchQuerySet() \
-                            .models(*models) \
-                            .autocomplete(content_auto=query) \
-        
-        return queryset
-
-    def get_serializer_class(self, *args, **kwargs):
-        return BaseIndexSerializer
-
-    def get_models(self, request):
-        allowed_models = {
-            'artist': Artist,
-            'album': Album,
-            'tag': Tag,
-        }
-        param = request.GET.get('models')
-        if param:
-            model_names = param.split(',')
-            model_list = [
-                allowed_models.get(model.lower()) for model in model_names
-            ]
-            return list(filter(None, model_list))
-        else:
-            return list(allowed_models.values())
+    def filtered_query_set(self, query, models):
+        return BaseSearchQuerySet() \
+                    .models(*models) \
+                    .autocomplete(content_auto=query)
 
 
 class ArtistList(generics.ListCreateAPIView):
