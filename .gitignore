@@ -53,5 +53,8 @@ docs/_build/
 # PyBuilder
 target/
 
+# Temp pip installs
+.pip_temp
+
 # Docker environment files
 *.dockenv
