@@ -88,11 +88,20 @@ class Review(BaseModel):
 
 class Track(BaseModel):
     album = models.ForeignKey('Album', blank=True, null=True)
+    acousticness = models.FloatField(default=0.0)
+    danceability = models.FloatField(default=0.0)
     duration = models.IntegerField()
+    energy = models.FloatField(default=0.0)
+    instrumentalness = models.FloatField(default=0.0)
+    liveness = models.FloatField(default=0.0)
+    loudness = models.FloatField(default=0.0)
     mbid = models.CharField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
+    speechiness = models.FloatField(default=0.0)
     spotify_id = models.CharField(max_length=255)
     spotify_url = models.URLField(blank=True, null=True)
+    tempo = models.FloatField(default=0.0)
+    valence = models.FloatField(default=0.0)
 
     def __str__(self):
         return self.name

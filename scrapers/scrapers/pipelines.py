@@ -94,10 +94,19 @@ class DjangoItemPipeline(object):
                 mbid=t['mbid'],
                 defaults={
                     'album': album,
+                    'acousticness': t['acousticness'],
+                    'danceability': t['danceability'],
                     'duration': t['duration'],
+                    'energy': t['energy'],
+                    'instrumentalness': t['instrumentalness'],
+                    'liveness': t['liveness'],
+                    'loudness': t['loudness'],
                     'name': t['name'],
+                    'speechiness': t['speechiness'],
                     'spotify_id': t['spotify_id'],
                     'spotify_url': t['spotify_url'],
+                    'tempo': t['tempo'],
+                    'valence': t['valence'],
                 }
             )
 

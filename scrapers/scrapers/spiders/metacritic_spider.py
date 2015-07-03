@@ -163,10 +163,20 @@ class MetacriticSpider(CrawlSpider):
             track['duration'] = recording.get('duration', 0)
             if i < spotify_len:
                 s_track = spotify_tracks[i]
-                track['spotify_id'] = s_track.get('id', '')
                 track['duration'] = s_track.get('duration_ms', 0)
                 track['spotify_url'] = s_track.get('external_urls', {}) \
                                               .get('spotify', '')
+                track['spotify_id'] = s_track.get('id', '')
+                ts = self.apis.en_get_track_summary(track['spotify_id'])
+                track['acousticness'] = ts.get('acousticness', 0)
+                track['danceability'] = ts.get('danceability', 0)
+                track['energy'] = ts.get('energy', 0)
+                track['instrumentalness'] = ts.get('instrumentalness', 0)
+                track['liveness'] = ts.get('liveness', 0)
+                track['loudness'] = ts.get('loudness', 0)
+                track['speechiness'] = ts.get('speechiness', 0)
+                track['tempo'] = ts.get('tempo', 0)
+                track['valence'] = ts.get('valence', 0)
             tracks_list.append(track)
         album['tracks'] = tracks_list
 

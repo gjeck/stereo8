@@ -47,7 +47,7 @@ class MusicHelper():
         )
         response = self.spotify.search(query, type='album', limit=1)
         album_items = response.get('albums', {}) \
-                           .get('items', [])
+                              .get('items', [])
         if album_items:
             album_id = album_items[0].get('id', '')
             return self.spotify.album(album_id)
@@ -55,16 +55,36 @@ class MusicHelper():
             return {}
 
     def en_get_artist_familiarity(self, mbid):
-        artist_id = 'musicbrainz:artist:{0}'.format(mbid)
-        response = self.en.get('artist/familiarity', id=artist_id)
-        return response.get('artist', {}) \
-                       .get('familiarity', 0)
+        return self.en_get_artist_property('familiarity', mbid)
 
     def en_get_artist_trending(self, mbid):
+        return self.en_get_artist_property('hotttnesss', mbid)
+
+    def en_get_track_summary(self, mbid):
+        track_id = 'spotify:track:{0}'.format(mbid)
+        try:
+            response = self.en.get(
+                'track/profile',
+                id=track_id,
+                bucket=['audio_summary']
+            )
+            return response.get('track', {}) \
+                        .get('audio_summary', {})
+        except Exception as e:
+            print('No summary for track')
+            print(e)
+            return {}
+    
+    def en_get_artist_property(self, path, mbid):
         artist_id = 'musicbrainz:artist:{0}'.format(mbid)
-        response = self.en.get('artist/hotttnesss', id=artist_id)
-        return response.get('artist', {}) \
-                       .get('hotttnesss', 0)
+        try:
+            response = self.en.get('artist/{0}'.format(path), id=artist_id)
+            return response.get('artist', {}) \
+                        .get(path, 0)
+        except Exception as e:
+            print ('No artist property')
+            print(e)
+            return 0
 
     @staticmethod
     def build():
