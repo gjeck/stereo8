@@ -70,7 +70,7 @@ class SearchViewSet(generics.ListAPIView):
     def filtered_query_set(self, query, models):
         return BaseSearchQuerySet() \
                     .models(*models) \
-                    .filter(content=query)
+                    .filter(content=query) \
 
 
 class AutoSearchViewSet(SearchViewSet):
@@ -78,7 +78,7 @@ class AutoSearchViewSet(SearchViewSet):
     def filtered_query_set(self, query, models):
         return BaseSearchQuerySet() \
                     .models(*models) \
-                    .autocomplete(content_auto=query)
+                    .autocomplete(content_auto=query) \
 
 
 class ArtistList(generics.ListCreateAPIView):
