@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Avg
 from django.template.defaultfilters import slugify
 from taggit.managers import TaggableManager
 
@@ -27,6 +28,7 @@ class SlugModel(BaseModel):
 class Album(SlugModel):
     artist = models.ForeignKey('Artist', blank=True, null=True)
     image = models.ForeignKey('Image', blank=True, null=True)
+    sonic_info = models.ForeignKey('SonicInfo', blank=True, null=True)
     tags = TaggableManager()
     date = models.DateField()
     mbid = models.CharField(max_length=255, unique=True)
@@ -37,12 +39,24 @@ class Album(SlugModel):
     spotify_id = models.CharField(max_length=255)
     spotify_url = models.URLField(blank=True, null=True)
 
+    def update_sonic_info(self):
+        if not self.sonic_info:
+            self.sonic_info, created = SonicInfo.objects.update_or_create(
+                mbid=self.mbid
+            )
+        tracks = Track.objects.filter(album__mbid=self.mbid)
+        if tracks:
+            SonicInfo.aggregate_sonic_info(self.sonic_info, tracks)
+            self.sonic_info.save()
+            self.save()
+
     def __str__(self):
         return self.name
 
 
 class Artist(SlugModel):
     image = models.ForeignKey('Image', blank=True, null=True)
+    sonic_info = models.ForeignKey('SonicInfo', blank=True, null=True)
     tags = TaggableManager()
     bio = models.TextField()
     bio_url = models.URLField()
@@ -51,6 +65,17 @@ class Artist(SlugModel):
     spotify_id = models.CharField(max_length=255)
     spotify_url = models.URLField(blank=True, null=True)
     trending = models.FloatField(default=0.0)
+
+    def update_sonic_info(self):
+        if not self.sonic_info:
+            self.sonic_info, created = SonicInfo.objects.get_or_create(
+                mbid=self.mbid
+            )
+        albums = Album.objects.filter(artist__mbid=self.mbid)
+        if albums:
+            SonicInfo.aggregate_sonic_info(self.sonic_info, albums)
+            self.sonic_info.save()
+            self.save()
 
     def __str__(self):
         return self.name
@@ -88,21 +113,58 @@ class Review(BaseModel):
 
 class Track(BaseModel):
     album = models.ForeignKey('Album', blank=True, null=True)
+    sonic_info = models.ForeignKey('SonicInfo', blank=True, null=True)
+    duration = models.IntegerField()
+    mbid = models.CharField(max_length=255, unique=True)
+    name = models.CharField(max_length=255)
+    spotify_id = models.CharField(max_length=255)
+    spotify_url = models.URLField(blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+class SonicInfo(BaseModel):
     acousticness = models.FloatField(default=0.0)
     danceability = models.FloatField(default=0.0)
-    duration = models.IntegerField()
     energy = models.FloatField(default=0.0)
     instrumentalness = models.FloatField(default=0.0)
     liveness = models.FloatField(default=0.0)
     loudness = models.FloatField(default=0.0)
     mbid = models.CharField(max_length=255, unique=True)
-    name = models.CharField(max_length=255)
     speechiness = models.FloatField(default=0.0)
-    spotify_id = models.CharField(max_length=255)
-    spotify_url = models.URLField(blank=True, null=True)
     tempo = models.FloatField(default=0.0)
     valence = models.FloatField(default=0.0)
 
+    @staticmethod
+    def aggregate_sonic_info(s, agglist):
+        s.acousticness = agglist.aggregate(
+            avg_acousticness=Avg('sonic_info__acousticness')
+        ).get('avg_acousticness') or 0.0
+        s.danceability = agglist.aggregate(
+            avg_danceability=Avg('sonic_info__danceability')
+        ).get('avg_danceability') or 0.0
+        s.energy = agglist.aggregate(
+            avg_energy=Avg('sonic_info__energy')
+        ).get('avg_energy') or 0.0
+        s.instrumentalness = agglist.aggregate(
+            avg_instrumentalness=Avg('sonic_info__instrumentalness')
+        ).get('avg_instrumentalness') or 0.0
+        s.liveness = agglist.aggregate(
+            avg_liveness=Avg('sonic_info__liveness')
+        ).get('avg_liveness') or 0.0
+        s.loudness = agglist.aggregate(
+            avg_loudness=Avg('sonic_info__loudness')
+        ).get('avg_loudness') or 0.0
+        s.speechiness = agglist.aggregate(
+            avg_speechiness=Avg('sonic_info__speechiness')
+        ).get('avg_speechiness') or 0.0
+        s.tempo = agglist.aggregate(
+            avg_tempo=Avg('sonic_info__tempo')
+        ).get('avg_tempo') or 0.0
+        s.valence = agglist.aggregate(
+            avg_valence=Avg('sonic_info__valence')
+        ).get('avg_valence') or 0.0
+
     def __str__(self):
-        return self.name
+        return self.mbid
 

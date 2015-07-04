@@ -6,6 +6,7 @@ from .models import (
     Publisher,
     Review,
     Track,
+    SonicInfo,
 )
 
 
@@ -59,7 +60,21 @@ class TrackAdmin(admin.ModelAdmin):
     get_album.short_description = 'Album'
     get_artist.admin_order_field = 'album__artist__name'
     get_artist.short_description = 'Artist'
-    
+
+class SonicInfoAdmin(admin.ModelAdmin):
+    list_display = (
+        'acousticness',
+        'danceability',
+        'energy',
+        'instrumentalness', 
+        'liveness',
+        'loudness',
+        'mbid',
+        'speechiness',
+        'tempo',
+        'valence',
+    )
+
 
 admin.site.register(Album, AlbumAdmin)
 admin.site.register(Artist, ArtistAdmin)
@@ -67,3 +82,4 @@ admin.site.register(Image, ImageAdmin)
 admin.site.register(Publisher, PublisherAdmin)
 admin.site.register(Review, ReviewAdmin)
 admin.site.register(Track, TrackAdmin)
+admin.site.register(SonicInfo, SonicInfoAdmin)

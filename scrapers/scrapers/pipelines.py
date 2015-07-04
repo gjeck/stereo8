@@ -6,7 +6,8 @@ from base.models import (
     Image,
     Review,
     Publisher,
-    Track
+    Track,
+    SonicInfo,
 )
 
 
@@ -90,25 +91,34 @@ class DjangoItemPipeline(object):
             )
 
         for t in item['tracks']:
+            sonic, created = SonicInfo.objects.update_or_create(
+                mbid=t['mbid'],
+                defaults={
+                    'acousticness': t['sonic_info']['acousticness'],
+                    'danceability': t['sonic_info']['danceability'],
+                    'energy': t['sonic_info']['energy'],
+                    'instrumentalness': t['sonic_info']['instrumentalness'],
+                    'liveness': t['sonic_info']['liveness'],
+                    'loudness': t['sonic_info']['loudness'],
+                    'speechiness': t['sonic_info']['speechiness'],
+                    'tempo': t['sonic_info']['tempo'],
+                    'valence': t['sonic_info']['valence'],
+                }
+            )
             track, created = Track.objects.update_or_create(
                 mbid=t['mbid'],
                 defaults={
                     'album': album,
-                    'acousticness': t['acousticness'],
-                    'danceability': t['danceability'],
+                    'sonic_info': sonic,
                     'duration': t['duration'],
-                    'energy': t['energy'],
-                    'instrumentalness': t['instrumentalness'],
-                    'liveness': t['liveness'],
-                    'loudness': t['loudness'],
                     'name': t['name'],
-                    'speechiness': t['speechiness'],
                     'spotify_id': t['spotify_id'],
                     'spotify_url': t['spotify_url'],
-                    'tempo': t['tempo'],
-                    'valence': t['valence'],
                 }
             )
+
+        album.update_sonic_info()
+        artist.update_sonic_info()
 
         return item
 
