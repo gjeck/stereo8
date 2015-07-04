@@ -10,7 +10,8 @@ from scrapers.items import (
     ImageItem,
     TrackItem,
     ReviewItem,
-    PublisherItem
+    PublisherItem,
+    SonicInfoItem,
 )
 from scrapers.music_apis import MusicHelper
 from urlparse import urlparse
@@ -19,7 +20,7 @@ from urlparse import urlparse
 class MetacriticSpider(CrawlSpider):
     name = 'metacritic'
     allowed_domains = ['metacritic.com']
-    download_delay = 3
+    download_delay = 5
     apis = MusicHelper.build()
 
     def __init__(self, crawl_all=None, *args, **kwargs):
@@ -161,6 +162,7 @@ class MetacriticSpider(CrawlSpider):
             track['mbid'] = recording.get('id', '')
             track['name'] = recording.get('title', '')
             track['duration'] = recording.get('duration', 0)
+            sonic = SonicInfoItem()
             if i < spotify_len:
                 s_track = spotify_tracks[i]
                 track['duration'] = s_track.get('duration_ms', 0)
@@ -168,15 +170,16 @@ class MetacriticSpider(CrawlSpider):
                                               .get('spotify', '')
                 track['spotify_id'] = s_track.get('id', '')
                 ts = self.apis.en_get_track_summary(track['spotify_id'])
-                track['acousticness'] = ts.get('acousticness', 0)
-                track['danceability'] = ts.get('danceability', 0)
-                track['energy'] = ts.get('energy', 0)
-                track['instrumentalness'] = ts.get('instrumentalness', 0)
-                track['liveness'] = ts.get('liveness', 0)
-                track['loudness'] = ts.get('loudness', 0)
-                track['speechiness'] = ts.get('speechiness', 0)
-                track['tempo'] = ts.get('tempo', 0)
-                track['valence'] = ts.get('valence', 0)
+                sonic['acousticness'] = ts.get('acousticness', 0)
+                sonic['danceability'] = ts.get('danceability', 0)
+                sonic['energy'] = ts.get('energy', 0)
+                sonic['instrumentalness'] = ts.get('instrumentalness', 0)
+                sonic['liveness'] = ts.get('liveness', 0)
+                sonic['loudness'] = ts.get('loudness', 0)
+                sonic['speechiness'] = ts.get('speechiness', 0)
+                sonic['tempo'] = ts.get('tempo', 0)
+                sonic['valence'] = ts.get('valence', 0)
+            track['sonic_info'] = sonic
             tracks_list.append(track)
         album['tracks'] = tracks_list
 
