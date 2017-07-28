@@ -4,6 +4,7 @@ import musicbrainzngs
 import pylast
 import pyen
 import spotipy
+from spotipy.oauth2 import SpotifyClientCredentials
 import logging
 from django.utils.html import strip_tags
 
@@ -140,7 +141,8 @@ class MusicHelper():
             'https://github.com/gjeck/stereo8'
         )
         en = pyen.Pyen()
-        spotify = spotipy.Spotify()
+        client_credentials_manager = SpotifyClientCredentials()
+        spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
         lastfm = pylast.LastFMNetwork(
             api_key=os.environ.get('LAST_FM_API_KEY', ''),
             api_secret=os.environ.get('LAST_FM_API_SECRET', '')
