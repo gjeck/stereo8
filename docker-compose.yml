@@ -1,20 +1,22 @@
-db:
+version: '3'
+services:
+  db:
     image: postgres
     env_file:
       - .keys.dockenv
-search:
-    image: elasticsearch
+  search:
+    image: elasticsearch:2.4.6
     ports:
       - "9200:9200"
       - "9300:9300"
-web:
+  web:
     build: .
-    command: python3.4 stereo8/manage.py runserver 0.0.0.0:8000
+    command: python3 stereo8/manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/code
     ports:
       - "8000:8000"
-    links:
+    depends_on:
       - db
       - search
     env_file:

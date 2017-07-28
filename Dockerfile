@@ -1,4 +1,4 @@
-FROM ubuntu:14.04.2
+FROM ubuntu:latest
 MAINTAINER Greg Jeckell, gregory.jeckell@gmail.com
 
 RUN apt-get update \
@@ -14,22 +14,17 @@ RUN apt-get update \
     pkg-config \
     gcc \
     make \
-    python3.4 \
-    python3.4-dev \
+    python3-setuptools \
     python3-pip \
-    python-dev \
-    python-setuptools \
+    python3-dev \
     curl \
     git \
     vim \
-    nodejs \
-    npm \
     && apt-get autoremove \
     && apt-get clean
 
 RUN mkdir /code
 WORKDIR /code
 ADD . /code/
+RUN pip3 install --upgrade pip
 RUN pip3 install -r stereo8/requirements.txt
-RUN easy_install-2.7 pip
-RUN pip install -r scrapers/requirements.txt --src=/.pip_temp

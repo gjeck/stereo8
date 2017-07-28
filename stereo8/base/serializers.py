@@ -14,12 +14,14 @@ class AlbumSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Album
+        fields = '__all__' 
 
 
 class ArtistSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Artist
+        fields = '__all__' 
 
 
 class BaseIndexSerializer(serializers.Serializer):
@@ -38,29 +40,34 @@ class ImageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Image
+        fields = '__all__' 
 
 
 class PublisherSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Publisher
+        fields = '__all__' 
 
 
 class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
+        fields = '__all__' 
 
 
 class TagSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tag
+        fields = '__all__' 
 
 
 class TrackSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Track
+        fields = '__all__' 
 
 
