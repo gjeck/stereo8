@@ -1,8 +1,7 @@
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include, url
 from base import views as base_views
 
-urlpatterns = patterns(
-    '',
+urlpatterns = [
     url(
         regex=r'^albums/$',
         view=base_views.AlbumList.as_view(),
@@ -43,5 +42,5 @@ urlpatterns = patterns(
         view=base_views.TrackList.as_view(),
         name='track-list'
     ),
-)
+]
 

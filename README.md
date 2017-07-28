@@ -33,7 +33,7 @@ PYTHONUNBUFFERED=1
 ## Django
 You'll need to create a super user to access the django admin panel
 ```
-python3.4 manage.py createsuperuser
+python3 manage.py createsuperuser
 ```
 
 ## Scrapers
@@ -45,10 +45,10 @@ scrapy crawl <scraper_name>
 ## Elasticsearch
 To import django model data into elastic search run
 ```
-python3.4 manage.py rebuild_index
+python3 manage.py rebuild_index
 ```
 
 To update data in elastic search run
 ```
-python3.4 manage.py update_index
+python3 manage.py update_index
 ```

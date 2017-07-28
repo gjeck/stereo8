@@ -57,11 +57,10 @@ class SearchViewSet(generics.ListAPIView):
             'album': Album,
             'tag': Tag,
         }
-        param = request.GET.get('models')
+        param = request.GET.getlist('model')
         if param:
-            model_names = param.split(',')
             model_list = [
-                allowed_models.get(model.lower()) for model in model_names
+                allowed_models.get(model.lower()) for model in param
             ]
             return list(filter(None, model_list))
         else:
