@@ -9,6 +9,11 @@ You'll need [docker](https://www.docker.com/products/docker-toolbox) installed. 
 docker-compose up
 ```
 
+It's often useful to enter one of the containers to debug. Do that by running:
+```
+docker exec -it <container_id> bash
+```
+
 It will be expecting a `.keys.dockenv` file containing important passwords and configuration values. The most important are as follows:
 ```
 # Django keys
