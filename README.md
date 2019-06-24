@@ -46,14 +46,3 @@ To run a scraper navigate to `scrapers` and run
 ```
 scrapy crawl <scraper_name>
 ```
-
-## Elasticsearch
-To import django model data into elastic search run
-```
-python3 manage.py rebuild_index
-```
-
-To update data in elastic search run
-```
-python3 manage.py update_index
-```

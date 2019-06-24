@@ -1,21 +1,13 @@
 from django.conf.urls import include, url
 from base import views as base_views
 
+app_name = 'api'
+
 urlpatterns = [
     url(
         regex=r'^albums/$',
         view=base_views.AlbumList.as_view(),
         name='album-list'
-    ),
-    url(
-        regex=r'^search/$',
-        view=base_views.SearchViewSet.as_view(),
-        name='search'
-    ),
-    url(
-        regex=r'^autosearch/$',
-        view=base_views.AutoSearchViewSet.as_view(),
-        name='autosearch'
     ),
     url(
         regex=r'^artists/$',

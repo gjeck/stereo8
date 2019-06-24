@@ -14,8 +14,7 @@ from scrapers.items import (
     SonicInfoItem,
 )
 from scrapers.music_apis import MusicHelper
-from urlparse import urlparse
-
+from urllib.parse import urlparse
 
 class MetacriticSpider(CrawlSpider):
     name = 'metacritic'
@@ -60,19 +59,19 @@ class MetacriticSpider(CrawlSpider):
         release_date = self.safe_extract(release_date_sel)
         release_date = dateparser.parse(release_date).date()
 
-        # External APIs have no info on upcoming releases, so we ignore them
-        if datetime.now().date() < release_date:
-            self.logger.info('Album has not been released yet')
-            return
-
         album_name_sel = meta_info.css('span a.hover_none span::text')
         album_name = self.safe_extract(album_name_sel)
         artist_name_sel = meta_info.css('a span.band_name::text')
         artist_name = self.safe_extract(artist_name_sel)
 
+        # External APIs have no info on upcoming releases, so we ignore them
+        if datetime.now().date() < release_date:
+            self.logger.info('Album {0} has not been released yet'.format(album_name))
+            return
+
         mb_album = self.apis.mb_find_album(album_name, artist=artist_name)
         if not mb_album:
-            self.logger.info('Album not found on musicbrainz')
+            self.logger.info('Album {0} not found on musicbrainz'.format(album_name))
             return
 
         artist_credit = mb_album['artist-credit'][0]['artist']['name']
@@ -84,7 +83,7 @@ class MetacriticSpider(CrawlSpider):
 
         # Do some fuzzy matching on artist, return if not confident
         if artist_confidence < 55:
-            self.logger.info('Fuzzy matching confidence too low to continue')
+            self.logger.info('Fuzzy matching {0} and {1} confidence too low to continue'.format(artist_name, artist_credit))
             return
 
         lf_artist = self.apis.lastfm.get_artist_by_mbid(artist_id)

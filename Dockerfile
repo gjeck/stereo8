@@ -1,4 +1,4 @@
-FROM ubuntu:latest
+FROM ubuntu:18.04
 MAINTAINER Greg Jeckell, gregory.jeckell@gmail.com
 
 RUN apt-get update \

@@ -1,4 +1,3 @@
-import django
 from scrapers.items import AlbumItem
 from base.models import (
     Artist,
@@ -12,8 +11,6 @@ from base.models import (
 
 
 class DjangoItemPipeline(object):
-    django.setup()
-
     def process_item(self, item, spider):
         if isinstance(item, AlbumItem):
             self.process_album(item, spider)

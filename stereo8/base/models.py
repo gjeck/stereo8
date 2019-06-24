@@ -26,9 +26,9 @@ class SlugModel(BaseModel):
 
 
 class Album(SlugModel):
-    artist = models.ForeignKey('Artist', blank=True, null=True)
-    image = models.ForeignKey('Image', blank=True, null=True)
-    sonic_info = models.ForeignKey('SonicInfo', blank=True, null=True)
+    artist = models.ForeignKey('Artist', models.SET_NULL, blank=True, null=True)
+    image = models.ForeignKey('Image', models.CASCADE, blank=True, null=True)
+    sonic_info = models.ForeignKey('SonicInfo', models.CASCADE, blank=True, null=True)
     tags = TaggableManager()
     date = models.DateField()
     mbid = models.CharField(max_length=255, unique=True)
@@ -55,8 +55,8 @@ class Album(SlugModel):
 
 
 class Artist(SlugModel):
-    image = models.ForeignKey('Image', blank=True, null=True)
-    sonic_info = models.ForeignKey('SonicInfo', blank=True, null=True)
+    image = models.ForeignKey('Image', models.CASCADE, blank=True, null=True)
+    sonic_info = models.ForeignKey('SonicInfo', models.CASCADE, blank=True, null=True)
     tags = TaggableManager()
     bio = models.TextField()
     bio_url = models.URLField()
@@ -100,8 +100,8 @@ class Publisher(BaseModel):
 
 
 class Review(BaseModel):
-    album = models.ForeignKey('Album', blank=True, null=True)
-    publisher = models.ForeignKey('Publisher', blank=True, null=True)
+    album = models.ForeignKey('Album', models.SET_NULL, blank=True, null=True)
+    publisher = models.ForeignKey('Publisher', models.SET_NULL, blank=True, null=True)
     date = models.DateField()
     score = models.IntegerField()
     summary = models.TextField()
@@ -112,8 +112,8 @@ class Review(BaseModel):
 
 
 class Track(BaseModel):
-    album = models.ForeignKey('Album', blank=True, null=True)
-    sonic_info = models.ForeignKey('SonicInfo', blank=True, null=True)
+    album = models.ForeignKey('Album', models.SET_NULL, blank=True, null=True)
+    sonic_info = models.ForeignKey('SonicInfo', models.CASCADE, blank=True, null=True)
     duration = models.IntegerField()
     mbid = models.CharField(max_length=255, unique=True)
     name = models.CharField(max_length=255)

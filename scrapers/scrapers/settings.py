@@ -13,6 +13,9 @@ sys.path.append('/code/stereo8')
 import os
 os.environ['DJANGO_SETTINGS_MODULE'] = 'stereo8.settings'
 
+import django
+django.setup()
+
 BOT_NAME = 'scrapers'
 SPIDER_MODULES = ['scrapers.spiders']
 NEWSPIDER_MODULE = 'scrapers.spiders'
