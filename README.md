@@ -46,3 +46,10 @@ To run a scraper navigate to `scrapers` and run
 ```
 scrapy crawl <scraper_name>
 ```
+
+## Database
+To connect and inspect the database run:
+```
+docker exec -it <db_container_name> psql -U postgres
+```
+
