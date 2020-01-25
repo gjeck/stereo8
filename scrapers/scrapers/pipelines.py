@@ -32,10 +32,8 @@ class DjangoItemPipeline(object):
             defaults={
                 'bio': item['artist']['bio'],
                 'bio_url': item['artist']['bio_url'],
-                'familiarity': item['artist']['familiarity'],
                 'image': artist_image,
                 'name': item['artist']['name'],
-                'trending': item['artist']['trending'],
                 'spotify_id': item['artist']['spotify_id'],
                 'spotify_url': item['artist']['spotify_url'],
             }

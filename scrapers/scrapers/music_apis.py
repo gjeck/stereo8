@@ -2,7 +2,6 @@ import os
 import re
 import musicbrainzngs
 import pylast
-import pyen
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import logging
@@ -11,8 +10,7 @@ from django.utils.html import strip_tags
 
 class MusicHelper():
 
-    def __init__(self, en, spotify, lastfm):
-        self.en = en
+    def __init__(self, spotify, lastfm):
         self.spotify = spotify
         self.lastfm = lastfm
 
@@ -62,10 +60,7 @@ class MusicHelper():
         Return:
            dict of spotify album (or empty)
         '''
-        query = 'album:{0} artist:{1}'.format(
-            name.encode('utf-8'),
-            artist.encode('utf-8')
-        )
+        query = 'album:{0} artist:{1}'.format(name, artist)
         try:
             response = self.spotify.search(query, type='album', limit=1)
             album_id = response.get('albums', {}) \
@@ -74,62 +69,19 @@ class MusicHelper():
             return self.spotify.album(album_id)
         except Exception as e:
             logging.info('SPOTIFY: album not found {0}'.format(e))
-            return {}
+            return None
 
-    def en_get_artist_familiarity(self, mbid):
-        ''' Gets an echo nest artist familiarity
-        Args:
-            mbid: musicbrainzngs artist id
-        Returns:
-            float or 0.0
-        '''
-        return self.en_get_artist_property('familiarity', mbid)
-
-    def en_get_artist_trending(self, mbid):
-        ''' Gets an echo nest artist trending
-        Args:
-            mbid: musicbrainzngs artist id
-        Returns:
-            float or 0.0
-        '''
-        return self.en_get_artist_property('hotttnesss', mbid)
-
-    def en_get_track_summary(self, mbid):
-        ''' Gets the echo nest track summary (audio info)
-        Args:
-            mbid: musicbrainzngs track id
-        Returns:
-            dict of audio info or empty
-        '''
-        track_id = 'spotify:track:{0}'.format(mbid)
+    def sp_find_artist(self, artist_name):
+        query = 'artist:{0}'.format(artist_name)
         try:
-            response = self.en.get(
-                'track/profile',
-                id=track_id,
-                bucket=['audio_summary']
-            )
-            return response.get('track', {}) \
-                           .get('audio_summary', {})
+            response = self.spotify.search(query, type='artist', limit=1)
+            artist_id = response.get('artists', {}) \
+                                .get('items', [{}])[0] \
+                                .get('id', '')
+            return self.spotify.artist(artist_id)
         except Exception as e:
-            logging.info('ECHO NEST: no summary for track {0}'.format(e))
-            return {}
-    
-    def en_get_artist_property(self, path, mbid):
-        ''' Gets an artist property endpoint from echo nest
-        Args:
-            path: the echo nest api endpoint
-            mbid: musicbrainzngs artist id
-        Returns:
-            float of 0.0
-        '''
-        artist_id = 'musicbrainz:artist:{0}'.format(mbid)
-        try:
-            response = self.en.get('artist/{0}'.format(path), id=artist_id)
-            return response.get('artist', {}) \
-                           .get(path, 0)
-        except Exception as e:
-            logging.info('ECHO NEST: no artist property {0}'.format(e))
-            return 0
+            logging.info('SPOTIFY: artist not found {0}'.format(e))
+            return None
 
     @staticmethod
     def build():
@@ -140,7 +92,6 @@ class MusicHelper():
             '0.1.0',
             'https://github.com/gjeck/stereo8'
         )
-        en = pyen.Pyen()
         client_credentials_manager = SpotifyClientCredentials()
         spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
         lastfm = pylast.LastFMNetwork(
@@ -149,11 +100,11 @@ class MusicHelper():
         )
         lastfm.enable_rate_limit()
         lastfm.enable_caching()
-        return MusicHelper(en, spotify, lastfm)
+        return MusicHelper(spotify, lastfm)
 
     @staticmethod
     def lastfm_clean_summary(summary):
-        clean_summary = strip_tags(summary.replace('\n', '').strip())
+        clean_summary = MusicHelper.rchop(strip_tags(summary.replace('\n', '').strip()), "Read more on Last.fm")
         final = re.split(r'\s{4,}', clean_summary)
         if final:
             return final[0]
@@ -167,4 +118,17 @@ class MusicHelper():
     @staticmethod
     def clean_tag(tag):
         return re.sub(r'-|\/', ' ', tag.lower())
+
+    @staticmethod
+    def rchop(thestring, ending):
+        ''' Chops the end off a string if the end matches a substring
+        Args:
+            thestring: the string to chop
+            ending: the substring to match
+        Returns:
+            the input string minus the matched end
+        '''
+        if thestring.endswith(ending):
+            return thestring[:-len(ending)]
+        return thestring
 

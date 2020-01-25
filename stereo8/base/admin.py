@@ -21,7 +21,7 @@ class AlbumAdmin(admin.ModelAdmin):
 
 
 class ArtistAdmin(admin.ModelAdmin):
-    list_display = ('name', 'familiarity', 'trending')
+    list_display = ['name']
 
 
 class ImageAdmin(admin.ModelAdmin):

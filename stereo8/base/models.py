@@ -61,10 +61,8 @@ class Artist(SlugModel):
     bio = models.TextField()
     bio_url = models.URLField()
     mbid = models.CharField(max_length=255, unique=True)
-    familiarity = models.FloatField(default=0.0)
     spotify_id = models.CharField(max_length=255)
     spotify_url = models.URLField(blank=True, null=True)
-    trending = models.FloatField(default=0.0)
 
     def update_sonic_info(self):
         if not self.sonic_info:

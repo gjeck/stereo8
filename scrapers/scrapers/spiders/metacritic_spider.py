@@ -1,5 +1,5 @@
 import scrapy
-from scrapy.spiders import CrawlSpider, Rule
+from scrapy.spiders import CrawlSpider, Rule, Spider
 from scrapy.linkextractors import LinkExtractor
 from datetime import datetime
 from dateutil import parser as dateparser
@@ -16,23 +16,50 @@ from scrapers.items import (
 from scrapers.music_apis import MusicHelper
 from urllib.parse import urlparse
 
+class MetacriticSingleSpider(Spider):
+    name = 'meta-album'
+    allowed_domains = ['metacritic.com']
+    download_delay = 5
+    metacritic_spider = {}
+
+    def __init__(self, url=None, *args, **kwargs):
+        super(MetacriticSingleSpider, self).__init__(*args, **kwargs)
+        self.metacritic_spider = MetacriticSpider(*args, **kwargs)
+        print('meta: {0}'.format(self.metacritic_spider))
+        if url:
+            self.start_urls = [url]
+        else:
+            self.start_urls = []
+
+    def parse(self, response):
+        return self.metacritic_spider.parse_album_page(response)
+
 class MetacriticSpider(CrawlSpider):
     name = 'metacritic'
     allowed_domains = ['metacritic.com']
     download_delay = 5
     apis = MusicHelper.build()
 
-    def __init__(self, crawl_all=None, *args, **kwargs):
+    def __init__(self, crawl_all=None, url=None, *args, **kwargs):
         super(MetacriticSpider, self).__init__(*args, **kwargs)
-        self.base_url = 'http://www.metacritic.com'
-        if crawl_all:
+        self.base_url = 'https://www.metacritic.com'
+        if url:
+            self.start_urls = [url]
+            self.rules = (
+                Rule(
+                    LinkExtractor(allow=url,canonicalize=True,unique=True ),
+                    callback='parse_album_page',
+                    follow=False
+                ),
+            )
+        elif crawl_all:
             self.start_urls = [
                 '{0}/browse/albums/artist'.format(self.base_url),
             ]
             self.rules = (
-                Rule(LinkExtractor(allow=r'\/albums\/artist\/[A-z]', )),
+                Rule(LinkExtractor(allow=r'\/albums\/artist\/[A-z]',unique=True )),
                 Rule(
-                    LinkExtractor(allow=r'\/music\/.*\/.*', ),
+                    LinkExtractor(allow=r'\/music\/.*\/.*',unique=True ),
                     callback='parse_album_page'
                 ),
             )
@@ -43,7 +70,7 @@ class MetacriticSpider(CrawlSpider):
             ]
             self.rules = (
                 Rule(
-                    LinkExtractor(allow=r'\/music\/.*\/.*'),
+                    LinkExtractor(allow=r'\/music\/.*\/.*',unique=True ),
                     callback='parse_album_page', follow=True
                 ),
             )
@@ -59,19 +86,21 @@ class MetacriticSpider(CrawlSpider):
         release_date = self.safe_extract(release_date_sel)
         release_date = dateparser.parse(release_date).date()
 
-        album_name_sel = meta_info.css('span a.hover_none span::text')
+        album_name_sel = meta_info.css('div.product_title h1::text')
         album_name = self.safe_extract(album_name_sel)
         artist_name_sel = meta_info.css('a span.band_name::text')
         artist_name = self.safe_extract(artist_name_sel)
 
         # External APIs have no info on upcoming releases, so we ignore them
         if datetime.now().date() < release_date:
-            self.logger.info('Album {0} has not been released yet'.format(album_name))
+            self.logger.info('METACRITIC: Album {0} has not been released yet'.format(album_name))
             return
+
+        self.logger.info('METACRITIC: extracted from page (release_date: {0}, artist: {1}, album: {2})'.format(release_date, artist_name, album_name))
 
         mb_album = self.apis.mb_find_album(album_name, artist=artist_name)
         if not mb_album:
-            self.logger.info('Album {0} not found on musicbrainz'.format(album_name))
+            self.logger.info('METACRITIC: Album {0} not found on musicbrainz'.format(album_name))
             return
 
         artist_credit = mb_album['artist-credit'][0]['artist']['name']
@@ -83,10 +112,47 @@ class MetacriticSpider(CrawlSpider):
 
         # Do some fuzzy matching on artist, return if not confident
         if artist_confidence < 55:
-            self.logger.info('Fuzzy matching {0} and {1} confidence too low to continue'.format(artist_name, artist_credit))
+            self.logger.info('METACRITIC: Fuzzy matching {0} and {1} confidence too low to continue'.format(artist_name, artist_credit))
             return
 
-        lf_artist = self.apis.lastfm.get_artist_by_mbid(artist_id)
+        self.logger.info('METACRITIC: got musicbrainz artist: {0}, id: {1}, album_title: {2}'.format(artist_credit, artist_id, mb_album['title'])) 
+
+        sp_album = self.apis.sp_find_album(
+            mb_album['title'], artist=artist_name
+        )
+
+        if not sp_album:
+            self.logger.info('METACRITIC: album not found on spotify')
+            return
+
+        sp_artist = self.apis.sp_find_artist(artist_name)
+
+        if not sp_artist:
+            self.logger.info('METACRITIC: artist not found on spotify')
+            return
+
+        lf_artist = None
+        try:
+            lf_artist = self.apis.lastfm.get_artist_by_mbid(artist_id)
+        except:
+            self.logger.info('METACRITIC: artist_id {0} not found on last.fm doing search instead'.format(artist_id))
+
+        try:
+            lf_artist_search = self.apis.lastfm.search_for_artist(artist_credit)
+            lf_artist_search_results = lf_artist_search.get_next_page()
+            for result_artist in lf_artist_search_results:
+                compare_confidence = fuzz.token_sort_ratio(artist_name, result_artist.name)
+                if compare_confidence > 50:
+                    lf_artist = result_artist
+                    break
+        except:
+            self.logger.info('METACRITIC: artist {0} not found on last.fm. Ending'.format(artist_credit))
+            return
+
+        if not lf_artist:
+            self.logger.info('METACRITIC: artist {0} not found on last.fm. Ending'.format(artist_credit))
+            return
+
         artist_image = ImageItem()
         artist_image['large'] = lf_artist.get_cover_image(4)
         artist_image['medium'] = lf_artist.get_cover_image(3)
@@ -98,9 +164,6 @@ class MetacriticSpider(CrawlSpider):
         album_image['medium'] = lf_album.get_cover_image(3)
         album_image['small'] = lf_album.get_cover_image(2)
 
-        sp_album = self.apis.sp_find_album(
-            mb_album['title'], artist=artist_name
-        )
         artist = ArtistItem()
         artist['mbid'] = artist_id
         artist['name'] = artist_name
@@ -108,12 +171,12 @@ class MetacriticSpider(CrawlSpider):
             lf_artist.get_bio_summary()
         )
         artist['bio_url'] = lf_artist.get_url()
-        artist['tags'] = [
-            MusicHelper.lastfm_clean_tag(tag) for tag
-            in lf_artist.get_top_tags(limit=6)
-        ]
-        artist['familiarity'] = self.apis.en_get_artist_familiarity(artist_id)
-        artist['trending'] = self.apis.en_get_artist_trending(artist_id)
+        artist['tags'] = sp_artist.get('genres', [])
+        if not artist['tags']:
+            artist['tags'] = [
+                MusicHelper.lastfm_clean_tag(tag) for tag
+                in lf_artist.get_top_tags(limit=6)
+            ]
         artist['spotify_id'] = sp_album.get('artists', [{}])[0] \
                                        .get('id', '')
         artist['spotify_url'] = sp_album.get('artists', [{}])[0] \
@@ -149,10 +212,13 @@ class MetacriticSpider(CrawlSpider):
         album_tags_sel = response.css(
             'li.summary_detail.product_genre span.data::text'
         ).extract()
-        album['tags'] = [MusicHelper.clean_tag(tag) for tag in album_tags_sel]
+        album['tags'] = sp_album.get('genres', [])
+        if not album['tags']:
+            album['tags'] = [MusicHelper.clean_tag(tag) for tag in album_tags_sel]
 
         album_tracks = self.apis.mb_get_album_tracks(mb_release)
         spotify_tracks = sp_album.get('tracks', {}).get('items', [])
+        spotify_track_features = self.apis.spotify.audio_features(tracks=[track.get('id', '') for track in spotify_tracks])
         spotify_len = len(spotify_tracks)
         tracks_list = []
         for i, t in enumerate(album_tracks):
@@ -164,11 +230,15 @@ class MetacriticSpider(CrawlSpider):
             sonic = SonicInfoItem()
             if i < spotify_len:
                 s_track = spotify_tracks[i]
+                if fuzz.token_sort_ratio(track['name'], s_track.get('name', '')) < 40:
+                    self.logger.info('METACRITIC: skipping track due to name mismatch')
+                    continue
+
                 track['duration'] = s_track.get('duration_ms', 0)
                 track['spotify_url'] = s_track.get('external_urls', {}) \
                                               .get('spotify', '')
                 track['spotify_id'] = s_track.get('id', '')
-                ts = self.apis.en_get_track_summary(track['spotify_id'])
+                ts = spotify_track_features[i]
                 sonic['acousticness'] = ts.get('acousticness', 0)
                 sonic['danceability'] = ts.get('danceability', 0)
                 sonic['energy'] = ts.get('energy', 0)

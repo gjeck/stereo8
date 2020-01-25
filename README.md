@@ -11,6 +11,7 @@ docker-compose up
 
 It's often useful to enter one of the containers to debug. Do that by running:
 ```
+docker ps -a // lists current container ids
 docker exec -it <container_id> bash
 ```
 
@@ -45,6 +46,11 @@ python3 manage.py createsuperuser
 To run a scraper navigate to `scrapers` and run
 ```
 scrapy crawl <scraper_name>
+```
+
+Pass arguments to the scraper using `-a`:
+```
+scrapy crawl <scraper_name> -a argument1=value1
 ```
 
 ## Database
