@@ -22,7 +22,8 @@ DJANGO_PRODUCTION_KEY=some_password
 
 # Postgres keys
 POSTGRES_PASSWORD=some_password
-POSTGRES_USER=postgres
+POSTGRES_USER=postgres_user
+POSTGRES_DB=some_db
 
 # Last.fm API http://www.last.fm/api
 LAST_FM_API_KEY=some_key
@@ -31,9 +32,6 @@ LAST_FM_SECRET=some_secret
 # Spotify API https://developer.spotify.com/
 SPOTIFY_CLIENT_ID=some_id
 SPOTIFY_CLIENT_SECRET=some_secret
-
-# Dev/Debug keys
-PYTHONUNBUFFERED=1
 ```
 
 ## Django
