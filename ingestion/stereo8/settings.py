@@ -20,8 +20,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 SECRET_KEY = os.environ.get('DJANGO_PRODUCTION_KEY', '007defaultDevelopmentKey')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-TEMPLATE_DEBUG = True
+DEBUG = os.environ.get('DJANGO_DEBUG', False)
+TEMPLATE_DEBUG = os.environ.get('DJANGO_DEBUG', False)
 ALLOWED_HOSTS = ['localhost', '0.0.0.0']
 
 # Application definition

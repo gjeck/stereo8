@@ -4,16 +4,18 @@ services:
     image: postgres
     env_file:
       - .keys.dockenv
-  web:
-    build: .
+  ingestion:
+    build: ingestion
     command: >
-      sh -c "python3 stereo8/manage.py migrate &&
-             python3 stereo8/manage.py runserver 0.0.0.0:8000"
+      sh -c "python3 ingestion/manage.py migrate &&
+             python3 ingestion/manage.py runserver 0.0.0.0:8000"
     volumes:
       - .:/code
     ports:
       - "8000:8000"
     depends_on:
       - db
+    environment:
+      - DJANGO_DEBUG=True
     env_file:
       - .keys.dockenv
