@@ -174,7 +174,7 @@ class MetacriticSpider(CrawlSpider):
             lf_artist.get_bio_summary()
         )
         artist['bio_url'] = lf_artist.get_url()
-        artist['tags'] = sp_artist.get('genres', [])
+        artist['tags'] = [genre.lower() for genre in sp_artist.get('genres', [])]
         if not artist['tags']:
             artist['tags'] = [
                 MusicHelper.lastfm_clean_tag(tag) for tag
@@ -215,7 +215,7 @@ class MetacriticSpider(CrawlSpider):
         album_tags_sel = response.css(
             'li.summary_detail.product_genre span.data::text'
         ).extract()
-        album['tags'] = sp_album.get('genres', [])
+        album['tags'] = [genre.lower() for genre in sp_album.get('genres', [])]
         if not album['tags']:
             album['tags'] = [MusicHelper.clean_tag(tag) for tag in album_tags_sel]
 
