@@ -79,7 +79,7 @@ class DjangoItemPipeline(object):
                 defaults={
                     'album': album,
                     'publisher': publisher,
-                    'date': r['date'],
+                    'date': r.get('date', None),
                     'score': r['score'],
                     'summary': r['summary'],
                 }
@@ -89,15 +89,16 @@ class DjangoItemPipeline(object):
             sonic, created = SonicInfo.objects.update_or_create(
                 mbid=t['mbid'],
                 defaults={
-                    'acousticness': t['sonic_info']['acousticness'],
-                    'danceability': t['sonic_info']['danceability'],
-                    'energy': t['sonic_info']['energy'],
-                    'instrumentalness': t['sonic_info']['instrumentalness'],
-                    'liveness': t['sonic_info']['liveness'],
-                    'loudness': t['sonic_info']['loudness'],
-                    'speechiness': t['sonic_info']['speechiness'],
-                    'tempo': t['sonic_info']['tempo'],
-                    'valence': t['sonic_info']['valence'],
+                    'acousticness': t['sonic_info'].get('acousticness', 0),
+                    'danceability': t['sonic_info'].get('danceability', 0),
+                    'energy': t['sonic_info'].get('energy', 0),
+                    'instrumentalness': t['sonic_info'].get('instrumentalness', 0),
+                    'liveness': t['sonic_info'].get('liveness', 0),
+                    'loudness': t['sonic_info'].get('loudness', 0),
+                    'speechiness': t['sonic_info'].get('speechiness', 0),
+                    'tempo': t['sonic_info'].get('tempo', 0),
+                    'valence': t['sonic_info'].get('valence', 0),
+                    'mode': t['sonic_info'].get('mode', 0)
                 }
             )
             track, created = Track.objects.update_or_create(

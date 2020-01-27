@@ -25,7 +25,6 @@ class MetacriticSingleSpider(Spider):
     def __init__(self, url=None, *args, **kwargs):
         super(MetacriticSingleSpider, self).__init__(*args, **kwargs)
         self.metacritic_spider = MetacriticSpider(*args, **kwargs)
-        print('meta: {0}'.format(self.metacritic_spider))
         if url:
             self.start_urls = [url]
         else:
@@ -84,6 +83,10 @@ class MetacriticSpider(CrawlSpider):
             'li.summary_detail.release span.data::text'
         )
         release_date = self.safe_extract(release_date_sel)
+        if not release_date:
+            self.logger.info('METACRITIC: Release date is empty'.format(album_name))
+            return 
+
         release_date = dateparser.parse(release_date).date()
 
         album_name_sel = meta_info.css('div.product_title h1::text')
@@ -248,8 +251,9 @@ class MetacriticSpider(CrawlSpider):
                 sonic['speechiness'] = ts.get('speechiness', 0)
                 sonic['tempo'] = ts.get('tempo', 0)
                 sonic['valence'] = ts.get('valence', 0)
-            track['sonic_info'] = sonic
-            tracks_list.append(track)
+                sonic['mode'] = ts['mode']
+                track['sonic_info'] = sonic
+                tracks_list.append(track)
         album['tracks'] = tracks_list
 
         see_all_reviews = self.safe_extract(
@@ -284,15 +288,10 @@ class MetacriticSpider(CrawlSpider):
         reviews = response.css('li.review.critic_review')
         review_list = []
         for r in reviews:
-            rev_url = self.safe_extract(r.css('a.external::attr(href)'))
-            rev_date = self.safe_extract(r.css('.date::text'))
-
             publisher = PublisherItem()
             publisher['name'] = self.safe_extract(r.css('.source a::text'))
-            publisher['url'] = self.parse_base_url(rev_url)
 
             review = ReviewItem()
-            review['url'] = rev_url
             review['publisher'] = publisher
             review['score'] = self.safe_extract(
                 r.css('.review_grade div::text'), default='0'
@@ -300,8 +299,20 @@ class MetacriticSpider(CrawlSpider):
             review['summary'] = self.safe_extract(
                 r.css('.review_body::text')
             ).replace('\n', '').strip()
-            review['date'] = dateparser.parse(rev_date).date()
-            review_list.append(review)
+
+            rev_date = self.safe_extract(r.css('.date::text'))
+            if rev_date:
+                try:
+                    review['date'] = dateparser.parse(rev_date).date()
+                except:
+                    self.logger.info('METACRITIC: invalid date in review {0}'.format(rev_date))
+
+            rev_url = self.safe_extract(r.css('a.external::attr(href)'))
+            if rev_url and rev_url != '://':
+                publisher['url'] = self.parse_base_url(rev_url)
+                review['url'] = rev_url
+                review_list.append(review)
+
         return review_list
 
 

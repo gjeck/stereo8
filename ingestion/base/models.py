@@ -90,8 +90,8 @@ class Image(BaseModel):
 
 
 class Publisher(BaseModel):
-    name = models.CharField(max_length=255)
-    url = models.URLField(unique=True)
+    name = models.CharField(max_length=255, unique=True)
+    url = models.URLField(null=True)
 
     def __str__(self):
         return self.name
@@ -100,7 +100,7 @@ class Publisher(BaseModel):
 class Review(BaseModel):
     album = models.ForeignKey('Album', models.SET_NULL, blank=True, null=True)
     publisher = models.ForeignKey('Publisher', models.SET_NULL, blank=True, null=True)
-    date = models.DateField()
+    date = models.DateField(null=True)
     score = models.IntegerField()
     summary = models.TextField()
     url = models.URLField(unique=True)
@@ -132,6 +132,7 @@ class SonicInfo(BaseModel):
     speechiness = models.FloatField(default=0.0)
     tempo = models.FloatField(default=0.0)
     valence = models.FloatField(default=0.0)
+    mode = models.IntegerField(null=True)
 
     @staticmethod
     def aggregate_sonic_info(s, agglist):
@@ -162,6 +163,9 @@ class SonicInfo(BaseModel):
         s.valence = agglist.aggregate(
             avg_valence=Avg('sonic_info__valence')
         ).get('avg_valence') or 0.0
+        s.mode = agglist.aggregate(
+            avg_mode=Avg('sonic_info__mode')
+        ).get('avg_mode') or None
 
     def __str__(self):
         return self.mbid
