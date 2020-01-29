@@ -57,3 +57,7 @@ To connect and inspect the database run:
 docker exec -it <db_container_name> psql -U postgres
 ```
 
+## Hasura
+This service provides the graphql api endpoint. To restore the service's metadata:
+1. Click on the settings icon in the console screen
+2. Choose `hasura/metadata.json`
