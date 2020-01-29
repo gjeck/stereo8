@@ -2,6 +2,7 @@ from django.db import models
 from django.db.models import Avg
 from django.template.defaultfilters import slugify
 from taggit.managers import TaggableManager
+from taggit.models import TaggedItemBase
 
 
 class BaseModel(models.Model):
@@ -24,12 +25,14 @@ class SlugModel(BaseModel):
     class Meta:
         abstract = True
 
+class TaggedAlbum(TaggedItemBase):
+    content_object = models.ForeignKey('Album', on_delete=models.CASCADE)
 
 class Album(SlugModel):
     artist = models.ForeignKey('Artist', models.SET_NULL, blank=True, null=True)
     image = models.ForeignKey('Image', models.CASCADE, blank=True, null=True)
     sonic_info = models.ForeignKey('SonicInfo', models.CASCADE, blank=True, null=True)
-    tags = TaggableManager()
+    tags = TaggableManager(through=TaggedAlbum)
     date = models.DateField()
     mbid = models.CharField(max_length=255, unique=True)
     popularity = models.FloatField(default=0.0)
@@ -53,11 +56,13 @@ class Album(SlugModel):
     def __str__(self):
         return self.name
 
+class TaggedArtist(TaggedItemBase):
+    content_object = models.ForeignKey('Artist', on_delete=models.CASCADE)
 
 class Artist(SlugModel):
     image = models.ForeignKey('Image', models.CASCADE, blank=True, null=True)
     sonic_info = models.ForeignKey('SonicInfo', models.CASCADE, blank=True, null=True)
-    tags = TaggableManager()
+    tags = TaggableManager(through=TaggedArtist)
     bio = models.TextField()
     bio_url = models.URLField()
     mbid = models.CharField(max_length=255, unique=True)
@@ -90,8 +95,8 @@ class Image(BaseModel):
 
 
 class Publisher(BaseModel):
-    name = models.CharField(max_length=255, unique=True)
-    url = models.URLField(null=True)
+    name = models.CharField(max_length=255)
+    url = models.URLField(unique=True)
 
     def __str__(self):
         return self.name
@@ -117,6 +122,8 @@ class Track(BaseModel):
     name = models.CharField(max_length=255)
     spotify_id = models.CharField(max_length=255)
     spotify_url = models.URLField(blank=True, null=True)
+    popularity = models.FloatField(default=0.0)
+    track_number = models.IntegerField(null=True)
 
     def __str__(self):
         return self.name

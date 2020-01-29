@@ -110,6 +110,8 @@ class DjangoItemPipeline(object):
                     'name': t['name'],
                     'spotify_id': t['spotify_id'],
                     'spotify_url': t['spotify_url'],
+                    'track_number': t.get('track_number'),
+                    'popularity': t.get('popularity', 0)
                 }
             )
 

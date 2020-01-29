@@ -34,9 +34,7 @@ services:
     depends_on:
       - db
     environment:
-      HASURA_GRAPHQL_DATABASE_URL: postgres://postgres:weirdosFromAnotherPlanet2015@db/stereo8db
       HASURA_GRAPHQL_ENABLE_CONSOLE: "true"
-      # HASURA_GRAPHQL_ADMIN_SECRET: "debug-secret"
       HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
     env_file:
       - .keys.dockenv

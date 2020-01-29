@@ -19,7 +19,7 @@ from urllib.parse import urlparse
 class MetacriticSingleSpider(Spider):
     name = 'meta-album'
     allowed_domains = ['metacritic.com']
-    download_delay = 5
+    download_delay = 10
     metacritic_spider = {}
 
     def __init__(self, url=None, *args, **kwargs):
@@ -36,22 +36,13 @@ class MetacriticSingleSpider(Spider):
 class MetacriticSpider(CrawlSpider):
     name = 'metacritic'
     allowed_domains = ['metacritic.com']
-    download_delay = 5
+    download_delay = 10
     apis = MusicHelper.build()
 
-    def __init__(self, crawl_all=None, url=None, *args, **kwargs):
+    def __init__(self, crawl_all=None, *args, **kwargs):
         super(MetacriticSpider, self).__init__(*args, **kwargs)
         self.base_url = 'https://www.metacritic.com'
-        if url:
-            self.start_urls = [url]
-            self.rules = (
-                Rule(
-                    LinkExtractor(allow=url,canonicalize=True,unique=True ),
-                    callback='parse_album_page',
-                    follow=False
-                ),
-            )
-        elif crawl_all:
+        if crawl_all:
             self.start_urls = [
                 '{0}/browse/albums/artist'.format(self.base_url),
             ]
@@ -220,7 +211,22 @@ class MetacriticSpider(CrawlSpider):
             album['tags'] = [MusicHelper.clean_tag(tag) for tag in album_tags_sel]
 
         album_tracks = self.apis.mb_get_album_tracks(mb_release)
-        spotify_tracks = sp_album.get('tracks', {}).get('items', [])
+        spotify_track_items = sp_album.get('tracks', {}).get('items', [])
+        if not spotify_track_items:
+            self.logger.info('METACRITIC: skipping {0}-{1} due to missing spotify track info'.format(artist['name'], album['name']))
+            return
+
+        spotify_track_ids = [s_track.get('id') for s_track in spotify_track_items]
+        self.logger.info('METACRITIC: track-ids {0}'.format(spotify_track_ids))
+        if not spotify_track_ids:
+            self.logger.info('METACRITIC: skipping {0}-{1} due to empty spotify track ids'.format(artist['name'], album['name']))
+            return
+
+        spotify_tracks = self.apis.spotify.tracks(spotify_track_ids).get('tracks', {})
+        if not spotify_tracks:
+            self.logger.info('METACRITIC: skipping {0}-{1} due to missing spotify track info'.format(artist['name'], album['name']))
+            return
+
         spotify_track_features = self.apis.spotify.audio_features(tracks=[track.get('id', '') for track in spotify_tracks])
         spotify_len = len(spotify_tracks)
         tracks_list = []
@@ -237,11 +243,16 @@ class MetacriticSpider(CrawlSpider):
                     self.logger.info('METACRITIC: skipping track due to name mismatch')
                     continue
 
+                track['track_number'] = s_track['track_number']
+                track['popularity'] = s_track.get('popularity', 0.0) / 100.0
                 track['duration'] = s_track.get('duration_ms', 0)
                 track['spotify_url'] = s_track.get('external_urls', {}) \
                                               .get('spotify', '')
                 track['spotify_id'] = s_track.get('id', '')
                 ts = spotify_track_features[i]
+                if not ts:
+                    self.logger.info('METACRITIC: skipping {0}-{1}-{2} due to missing sonic info'.format(artist['name'], album['name'], track['name']))
+                    continue
                 sonic['acousticness'] = ts.get('acousticness', 0)
                 sonic['danceability'] = ts.get('danceability', 0)
                 sonic['energy'] = ts.get('energy', 0)

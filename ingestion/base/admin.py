@@ -1,7 +1,10 @@
 from django.contrib import admin
+from taggit.models import Tag
 from .models import (
     Album,
+    TaggedAlbum,
     Artist,
+    TaggedArtist,
     Image,
     Publisher,
     Review,
@@ -20,8 +23,28 @@ class AlbumAdmin(admin.ModelAdmin):
     get_artist.short_description = 'Artist'
 
 
+class TaggedAlbumAdmin(admin.ModelAdmin):
+    list_display = ['content_object', 'get_tag']
+
+    def get_tag(self, obj):
+        return Tag.objects.get(pk=obj.tag_id)
+
+    get_tag.admin_order_field = 'tag__name'
+    get_tag.short_description = 'Tag'
+
+
 class ArtistAdmin(admin.ModelAdmin):
     list_display = ['name']
+
+
+class TaggedArtistAdmin(admin.ModelAdmin):
+    list_display = ['content_object', 'get_tag']
+
+    def get_tag(self, obj):
+        return Tag.objects.get(pk=obj.tag_id)
+
+    get_tag.admin_order_field = 'tag__name'
+    get_tag.short_description = 'Tag'
 
 
 class ImageAdmin(admin.ModelAdmin):
@@ -77,7 +100,9 @@ class SonicInfoAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Album, AlbumAdmin)
+admin.site.register(TaggedAlbum, TaggedAlbumAdmin)
 admin.site.register(Artist, ArtistAdmin)
+admin.site.register(TaggedArtist, TaggedArtistAdmin)
 admin.site.register(Image, ImageAdmin)
 admin.site.register(Publisher, PublisherAdmin)
 admin.site.register(Review, ReviewAdmin)
