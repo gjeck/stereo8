@@ -11,6 +11,8 @@ docker-compose up
 
 It's often useful to enter one of the containers to debug. Do that by running:
 ```
+docker exec <container_name> bash
+// or more explicitly 
 docker ps -a // lists current container ids
 docker exec -it <container_id> bash
 ```
@@ -54,7 +56,7 @@ scrapy crawl <scraper_name> -a argument1=value1
 ## Database
 To connect and inspect the database run:
 ```
-docker exec -it <db_container_name> psql -U postgres
+docker-compose exec db psql -U postgres -d stereo8db
 ```
 
 ## Hasura
