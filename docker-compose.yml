@@ -35,6 +35,7 @@ services:
       - db
     environment:
       HASURA_GRAPHQL_ENABLE_CONSOLE: "true"
+      HASURA_GRAPHQL_UNAUTHORIZED_ROLE: "anonymous"
       HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
     env_file:
       - .keys.dockenv
