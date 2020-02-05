@@ -1,37 +1,38 @@
 from django.conf.urls import include, url
-from base import views as base_views
+from catalog import views as catalog_views
+
 
 app_name = 'api'
 
 urlpatterns = [
     url(
         regex=r'^albums/$',
-        view=base_views.AlbumList.as_view(),
+        view=catalog_views.AlbumList.as_view(),
         name='album-list'
     ),
     url(
         regex=r'^artists/$',
-        view=base_views.ArtistList.as_view(),
+        view=catalog_views.ArtistList.as_view(),
         name='artist-list'
     ),
     url(
         regex=r'^images/$',
-        view=base_views.ImageList.as_view(),
+        view=catalog_views.ImageList.as_view(),
         name='image-list'
     ),
     url(
         regex=r'^publishers/$',
-        view=base_views.PublisherList.as_view(),
+        view=catalog_views.PublisherList.as_view(),
         name='publisher-list'
     ),
     url(
         regex=r'^reviews/$',
-        view=base_views.ReviewList.as_view(),
+        view=catalog_views.ReviewList.as_view(),
         name='review-list'
     ),
     url(
         regex=r'^tracks/$',
-        view=base_views.TrackList.as_view(),
+        view=catalog_views.TrackList.as_view(),
         name='track-list'
     ),
 ]

@@ -8,7 +8,7 @@
 #     http://doc.scrapy.org/en/latest/topics/settings.html
 #
 import sys
-sys.path.append('/code/stereo8')
+sys.path.append('/code/ingestion')
 
 import os
 os.environ['DJANGO_SETTINGS_MODULE'] = 'stereo8.settings'

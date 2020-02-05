@@ -27,4 +27,4 @@ RUN mkdir /code
 WORKDIR /code
 ADD . /code/
 RUN pip3 install --upgrade pip
-RUN pip3 install -r stereo8/requirements.txt
+RUN pip3 install -r requirements.txt

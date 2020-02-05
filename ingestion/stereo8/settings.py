@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
 
@@ -20,8 +19,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 SECRET_KEY = os.environ.get('DJANGO_PRODUCTION_KEY', '007defaultDevelopmentKey')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-TEMPLATE_DEBUG = True
+DEBUG = os.environ.get('DJANGO_DEBUG', False)
+TEMPLATE_DEBUG = os.environ.get('DJANGO_DEBUG', False)
 ALLOWED_HOSTS = ['localhost', '0.0.0.0']
 
 # Application definition
@@ -35,8 +34,13 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'taggit',
     'rest_framework',
-    'base',
+    'rest_framework_api_key',
+    'rest_framework.authtoken',
+    'users',
+    'catalog',
 )
+
+AUTH_USER_MODEL = 'users.User'
 
 MIDDLEWARE = (
     'django.middleware.security.SecurityMiddleware',
@@ -68,14 +72,10 @@ TEMPLATES = [
     },
 ]
 
-
-# Database
-# https://docs.djangoproject.com/en/1.7/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
+        'NAME': os.environ.get('POSTGRES_DB', ''),
         'USER': os.environ.get('POSTGRES_USER', ''),
         'PASSWORD': os.environ.get('POSTGRES_PASSWORD', ''),
         'HOST': 'db',
@@ -83,14 +83,29 @@ DATABASES = {
     }
 }
 
-# API
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
 
 REST_FRAMEWORK = {
-    # Use Django's standard `django.contrib.auth` permissions,
-    # or allow read-only access for unauthenticated users.
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
+        'rest_framework_api_key.permissions.HasAPIKey',
+        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.IsAdminUser',
     ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '30/minute',
+        'user': '120/minute',
+    },
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 50,
 }
@@ -107,7 +122,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.7/howto/static-files/

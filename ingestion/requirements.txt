@@ -12,6 +12,7 @@ cssselect==1.1.0
 Django==3.0.2
 django-taggit==1.2.0
 djangorestframework==3.11.0
+djangorestframework-api-key==1.4.1
 fuzzywuzzy==0.17.0
 html5lib==1.0.1
 hyperlink==19.0.0

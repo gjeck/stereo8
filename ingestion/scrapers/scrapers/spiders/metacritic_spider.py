@@ -19,13 +19,12 @@ from urllib.parse import urlparse
 class MetacriticSingleSpider(Spider):
     name = 'meta-album'
     allowed_domains = ['metacritic.com']
-    download_delay = 5
+    download_delay = 10
     metacritic_spider = {}
 
     def __init__(self, url=None, *args, **kwargs):
         super(MetacriticSingleSpider, self).__init__(*args, **kwargs)
         self.metacritic_spider = MetacriticSpider(*args, **kwargs)
-        print('meta: {0}'.format(self.metacritic_spider))
         if url:
             self.start_urls = [url]
         else:
@@ -37,22 +36,13 @@ class MetacriticSingleSpider(Spider):
 class MetacriticSpider(CrawlSpider):
     name = 'metacritic'
     allowed_domains = ['metacritic.com']
-    download_delay = 5
+    download_delay = 10
     apis = MusicHelper.build()
 
-    def __init__(self, crawl_all=None, url=None, *args, **kwargs):
+    def __init__(self, crawl_all=None, *args, **kwargs):
         super(MetacriticSpider, self).__init__(*args, **kwargs)
         self.base_url = 'https://www.metacritic.com'
-        if url:
-            self.start_urls = [url]
-            self.rules = (
-                Rule(
-                    LinkExtractor(allow=url,canonicalize=True,unique=True ),
-                    callback='parse_album_page',
-                    follow=False
-                ),
-            )
-        elif crawl_all:
+        if crawl_all:
             self.start_urls = [
                 '{0}/browse/albums/artist'.format(self.base_url),
             ]
@@ -84,6 +74,10 @@ class MetacriticSpider(CrawlSpider):
             'li.summary_detail.release span.data::text'
         )
         release_date = self.safe_extract(release_date_sel)
+        if not release_date:
+            self.logger.info('METACRITIC: Release date is empty'.format(album_name))
+            return 
+
         release_date = dateparser.parse(release_date).date()
 
         album_name_sel = meta_info.css('div.product_title h1::text')
@@ -171,7 +165,7 @@ class MetacriticSpider(CrawlSpider):
             lf_artist.get_bio_summary()
         )
         artist['bio_url'] = lf_artist.get_url()
-        artist['tags'] = sp_artist.get('genres', [])
+        artist['tags'] = [genre.lower() for genre in sp_artist.get('genres', [])]
         if not artist['tags']:
             artist['tags'] = [
                 MusicHelper.lastfm_clean_tag(tag) for tag
@@ -212,12 +206,27 @@ class MetacriticSpider(CrawlSpider):
         album_tags_sel = response.css(
             'li.summary_detail.product_genre span.data::text'
         ).extract()
-        album['tags'] = sp_album.get('genres', [])
+        album['tags'] = [genre.lower() for genre in sp_album.get('genres', [])]
         if not album['tags']:
             album['tags'] = [MusicHelper.clean_tag(tag) for tag in album_tags_sel]
 
         album_tracks = self.apis.mb_get_album_tracks(mb_release)
-        spotify_tracks = sp_album.get('tracks', {}).get('items', [])
+        spotify_track_items = sp_album.get('tracks', {}).get('items', [])
+        if not spotify_track_items:
+            self.logger.info('METACRITIC: skipping {0}-{1} due to missing spotify track info'.format(artist['name'], album['name']))
+            return
+
+        spotify_track_ids = [s_track.get('id') for s_track in spotify_track_items]
+        self.logger.info('METACRITIC: track-ids {0}'.format(spotify_track_ids))
+        if not spotify_track_ids:
+            self.logger.info('METACRITIC: skipping {0}-{1} due to empty spotify track ids'.format(artist['name'], album['name']))
+            return
+
+        spotify_tracks = self.apis.spotify.tracks(spotify_track_ids).get('tracks', {})
+        if not spotify_tracks:
+            self.logger.info('METACRITIC: skipping {0}-{1} due to missing spotify track info'.format(artist['name'], album['name']))
+            return
+
         spotify_track_features = self.apis.spotify.audio_features(tracks=[track.get('id', '') for track in spotify_tracks])
         spotify_len = len(spotify_tracks)
         tracks_list = []
@@ -234,11 +243,16 @@ class MetacriticSpider(CrawlSpider):
                     self.logger.info('METACRITIC: skipping track due to name mismatch')
                     continue
 
+                track['track_number'] = s_track['track_number']
+                track['popularity'] = s_track.get('popularity', 0.0) / 100.0
                 track['duration'] = s_track.get('duration_ms', 0)
                 track['spotify_url'] = s_track.get('external_urls', {}) \
                                               .get('spotify', '')
                 track['spotify_id'] = s_track.get('id', '')
                 ts = spotify_track_features[i]
+                if not ts:
+                    self.logger.info('METACRITIC: skipping {0}-{1}-{2} due to missing sonic info'.format(artist['name'], album['name'], track['name']))
+                    continue
                 sonic['acousticness'] = ts.get('acousticness', 0)
                 sonic['danceability'] = ts.get('danceability', 0)
                 sonic['energy'] = ts.get('energy', 0)
@@ -248,8 +262,9 @@ class MetacriticSpider(CrawlSpider):
                 sonic['speechiness'] = ts.get('speechiness', 0)
                 sonic['tempo'] = ts.get('tempo', 0)
                 sonic['valence'] = ts.get('valence', 0)
-            track['sonic_info'] = sonic
-            tracks_list.append(track)
+                sonic['mode'] = ts['mode']
+                track['sonic_info'] = sonic
+                tracks_list.append(track)
         album['tracks'] = tracks_list
 
         see_all_reviews = self.safe_extract(
@@ -284,15 +299,10 @@ class MetacriticSpider(CrawlSpider):
         reviews = response.css('li.review.critic_review')
         review_list = []
         for r in reviews:
-            rev_url = self.safe_extract(r.css('a.external::attr(href)'))
-            rev_date = self.safe_extract(r.css('.date::text'))
-
             publisher = PublisherItem()
             publisher['name'] = self.safe_extract(r.css('.source a::text'))
-            publisher['url'] = self.parse_base_url(rev_url)
 
             review = ReviewItem()
-            review['url'] = rev_url
             review['publisher'] = publisher
             review['score'] = self.safe_extract(
                 r.css('.review_grade div::text'), default='0'
@@ -300,8 +310,20 @@ class MetacriticSpider(CrawlSpider):
             review['summary'] = self.safe_extract(
                 r.css('.review_body::text')
             ).replace('\n', '').strip()
-            review['date'] = dateparser.parse(rev_date).date()
-            review_list.append(review)
+
+            rev_date = self.safe_extract(r.css('.date::text'))
+            if rev_date:
+                try:
+                    review['date'] = dateparser.parse(rev_date).date()
+                except:
+                    self.logger.info('METACRITIC: invalid date in review {0}'.format(rev_date))
+
+            rev_url = self.safe_extract(r.css('a.external::attr(href)'))
+            if rev_url and rev_url != '://':
+                publisher['url'] = self.parse_base_url(rev_url)
+                review['url'] = rev_url
+                review_list.append(review)
+
         return review_list
 
 

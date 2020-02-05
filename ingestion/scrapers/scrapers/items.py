@@ -54,5 +54,6 @@ class SonicInfoItem(DjangoItem):
     speechiness = scrapy.Field(default=0.0)
     tempo = scrapy.Field(default=0.0)
     valence = scrapy.Field(default=0.0)
+    mode = scrapy.Field()
 
 

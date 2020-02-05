@@ -1,19 +1,43 @@
 version: '3.7'
 services:
   db:
-    image: postgres
+    image: postgres:12.1
+    restart: always
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
     env_file:
       - .keys.dockenv
-  web:
-    build: .
+  ingestion:
+    build: ingestion
+    restart: always
     command: >
-      sh -c "python3 stereo8/manage.py migrate &&
-             python3 stereo8/manage.py runserver 0.0.0.0:8000"
+      sh -c "python3 ingestion/manage.py migrate &&
+             python3 ingestion/manage.py runserver 0.0.0.0:8000"
     volumes:
       - .:/code
     ports:
       - "8000:8000"
     depends_on:
       - db
+    environment:
+      - DJANGO_DEBUG=True
+      - PYTHONUNBUFFERED=1
     env_file:
       - .keys.dockenv
+  graphql-engine:
+    image: hasura/graphql-engine:v1.0.0
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      HASURA_GRAPHQL_ENABLE_CONSOLE: "true"
+      HASURA_GRAPHQL_UNAUTHORIZED_ROLE: "anonymous"
+      HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
+    env_file:
+      - .keys.dockenv
+volumes:
+  db_data:

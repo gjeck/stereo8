@@ -11,6 +11,8 @@ docker-compose up
 
 It's often useful to enter one of the containers to debug. Do that by running:
 ```
+docker exec <container_name> bash
+// or more explicitly 
 docker ps -a // lists current container ids
 docker exec -it <container_id> bash
 ```
@@ -22,7 +24,8 @@ DJANGO_PRODUCTION_KEY=some_password
 
 # Postgres keys
 POSTGRES_PASSWORD=some_password
-POSTGRES_USER=postgres
+POSTGRES_USER=postgres_user
+POSTGRES_DB=some_db
 
 # Last.fm API http://www.last.fm/api
 LAST_FM_API_KEY=some_key
@@ -31,9 +34,6 @@ LAST_FM_SECRET=some_secret
 # Spotify API https://developer.spotify.com/
 SPOTIFY_CLIENT_ID=some_id
 SPOTIFY_CLIENT_SECRET=some_secret
-
-# Dev/Debug keys
-PYTHONUNBUFFERED=1
 ```
 
 ## Django
@@ -56,6 +56,10 @@ scrapy crawl <scraper_name> -a argument1=value1
 ## Database
 To connect and inspect the database run:
 ```
-docker exec -it <db_container_name> psql -U postgres
+docker-compose exec db psql -U postgres -d stereo8db
 ```
 
+## Hasura
+This service provides the graphql api endpoint. To restore the service's metadata:
+1. Click on the settings icon in the console screen
+2. Choose `hasura/metadata.json`
