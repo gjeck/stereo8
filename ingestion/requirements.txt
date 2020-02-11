@@ -9,7 +9,7 @@ colorama==0.4.3
 constantly==15.1.0
 cryptography==2.8
 cssselect==1.1.0
-Django==3.0.2
+Django==3.0.3
 django-taggit==1.2.0
 djangorestframework==3.11.0
 djangorestframework-api-key==1.4.1
